@@ -1,0 +1,53 @@
+﻿@page "/dashboard"
+@using snfcofcBlzrwb.Shared.Services.Interfaces
+@using snfcofcBlzrwb.Shared.Services.Sync
+@inject SyncService SyncService
+@inject ConnectivityService ConnectivityService
+@inject IPlayerService PlayerService
+@inject IMatchService MatchService
+@inject IEvaluationService EvaluationService
+
+<h3>Dashboard Deportivo</h3>
+
+<SfCard>
+    <CardHeader><CardTitle>Resumen del Equipo</CardTitle></CardHeader>
+    <CardContent>
+        <p><strong>Jugadores registrados:</strong> @players.Count</p>
+        <p><strong>Evaluaciones totales:</strong> @evaluations.Count</p>
+        <p><strong>Última sincronización:</strong> @lastSync.ToLocalTime()</p>
+        <SfButton CssClass="e-primary" @onclick="SyncNow">Sincronizar con Back4App</SfButton>
+    </CardContent>
+</SfCard>
+@if (!isOnline)
+{
+    <SfToast Content="Sin conexión a internet" TimeOut="3000" />
+}
+else if (!isBack4App)
+{
+    <SfToast Content="Back4App no disponible" TimeOut="3000" />
+}
+@code {
+    List<Player> players = new();
+    List<PlayerEvaluation> evaluations = new();
+    DateTime lastSync = DateTime.MinValue;
+    bool isOnline = true;
+    bool isBack4App = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isOnline = await ConnectivityService.IsOnlineAsync();
+        isBack4App = await ConnectivityService.IsBack4AppAvailableAsync();
+    
+        players = await PlayerService.GetAllAsync();
+        evaluations = await EvaluationService.GetAllAsync();
+        lastSync = DateTime.UtcNow; // Puedes guardar esto en localStorage si quieres persistencia
+    }
+
+    async Task SyncNow()
+    {
+        await SyncService.SyncAllAsync();
+        lastSync = DateTime.UtcNow;
+        players = await PlayerService.GetAllAsync();
+        evaluations = await EvaluationService.GetAllAsync();
+    }
+}

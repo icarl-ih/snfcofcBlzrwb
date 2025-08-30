@@ -1,0 +1,211 @@
+﻿<h3>PlayerCRUD</h3>
+@page "/playercrud/{PlayerId}"
+@using System.Net.Http.Headers
+@using SixLabors.ImageSharp.Processing;
+@inject IPlayerService PlayerService
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+
+<h3>Editar Player</h3>
+
+@if (player == null)
+{
+    <p>No disponible . . .</p>
+}
+else
+{
+    <EditForm Model="@player" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Nombre:</label>
+            <InputText @bind-Value="player.Nombre" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label>Posición:</label>
+            <InputText @bind-Value="player.Posicion" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label>Dorsal:</label>
+            <InputNumber @bind-Value="player.Dorsal" class="form-control" />
+        </div>
+
+        <div class="mb-3 form-check">
+            <InputCheckbox @bind-Value="player.ClaveSub" class="form-check-input" id="claveSub" />
+            <label class="form-check-label" for="claveSub">Es Sub 19</label>
+        </div>
+
+        <div class="mb-3 form-check">
+            <InputCheckbox @bind-Value="player.ClavePlus" class="form-check-input" id="clavePlus" />
+            <label class="form-check-label" for="clavePlus">Es Categoría Plus</label>
+        </div>
+
+        <div class="mb-3">
+            <label>Ranking:</label>
+            <InputNumber @bind-Value="player.Ranking" step="0.1" min="0" max="5" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label>Foto Player:</label><br />
+            @if (!string.IsNullOrEmpty(player.FotoPlayer?.Url))
+            {
+                <img src="@player.FotoPlayer.Url" alt="Foto Player" style="max-width: 150px; max-height: 150px; display:block; margin-bottom:10px;" />
+            }
+            <InputFile OnChange="OnInputFileChange" />
+        </div>
+        <div class="text-end mt-3">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button class="btn btn-danger" @onclick="EliminarPlayer" disabled="@isDeleting">
+                @if (isDeleting)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status">Eliminando...</span>
+
+                }
+                else
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status">Eliminar Player</span>
+                }
+            </button>
+        </div>
+
+    </EditForm>
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <footer>
+            <div class="alert alert-info mt-3">@message</div>
+        </footer>
+
+    }
+}
+
+@code {
+    private Player player = new Player();
+    [Parameter] public EventCallback<string> OnPlayerDeleted { get; set; }
+
+    private bool isDeleting = false;
+    private bool isDeleted = false;
+    private string message;
+
+    [Parameter] public string PlayerId { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(PlayerId))
+        {
+            player = await PlayerService.GetByIdAsync(PlayerId);
+        }
+        else
+        {
+            player = new Player();
+        }
+        // Si quieres cargar un player existente para editar, hazlo aquí
+        // Ejemplo: player = await PlayerService.GetPlayerById(id);
+        // Por ahora inicializamos uno nuevo
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(player.ObjectId))
+            {
+                throw new Exception("Sin Usuario Asignado");
+            }
+            else
+            {
+                await PlayerService.SaveAsync(player);
+                message = "Jugador Guardado correctamente.";
+
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error: {ex.Message}";
+        }
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        string namefoto = $"{player.Nombre}_{Guid.NewGuid()}";
+
+        if (file != null)
+        {
+            try
+            {
+                // Leer archivo en memoria (puedes limitar tamaño)
+                var buffer = new byte[file.Size];
+                await file.OpenReadStream(maxAllowedSize: 10 *1024*1024).ReadAsync(buffer);
+
+                // Redimensionar imagen
+                // var resized = await ResizeImageAsync(buffer, 512000, 512000); // Puedes ajustar tamaño
+
+
+                var info = await PlayerService.SubirFotoUsuarioAsync(buffer, namefoto);
+                // Asignar la URL a FotoPlayer
+                if (info.name != null)
+                {
+                    player.FotoPlayer = new ParseFile
+                        {
+                            Name = info.name,
+                            Type = "File"
+
+                        };
+                    StateHasChanged();
+                }
+                else
+                {
+                    throw new Exception("No hay un nombre de foto");
+                }
+
+
+            }catch(Exception ex)
+            {
+                message = $"⚠️ {ex.Message}";
+
+            }
+        }
+    }
+    
+
+    public async Task<byte[]> ResizeImageAsync(byte[] originalBytes, int maxWidth, int maxHeight)
+    {
+        using var image = Image.Load(originalBytes);
+        image.Mutate(x => x.Resize(new ResizeOptions
+            {
+                Mode = ResizeMode.Max,
+                Size = new Size(maxWidth, maxHeight)
+            }));
+
+        using var ms = new MemoryStream();
+        await image.SaveAsJpegAsync(ms);
+        return ms.ToArray();
+    }
+
+
+
+    async Task EliminarPlayer()
+    {
+        if (string.IsNullOrEmpty(player?.ObjectId)) return;
+
+        var confirm = await Confirmar($"¿Eliminar a {player.Nombre}?");
+        if (confirm)
+        {
+            isDeleting = true;
+            await PlayerService.DeleteAsync(player.ObjectId);
+            isDeleted = true;
+            await OnPlayerDeleted.InvokeAsync(player.ObjectId);
+        }
+    }
+    private async Task<bool> Confirmar(string mensaje)
+    {
+        return await JSRuntime.InvokeAsync<bool>("confirm", new object[] { mensaje });
+    }
+}

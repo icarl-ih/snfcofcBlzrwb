@@ -1,0 +1,108 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
+    <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
+    <!-- <TargetFrameworks>$(TargetFrameworks);net9.0-tizen</TargetFrameworks> -->
+
+    <!-- Note for MacCatalyst:
+      The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
+      When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifier>.
+      The Mac App Store will NOT accept apps with ONLY maccatalyst-arm64 indicated;
+      either BOTH runtimes must be indicated or ONLY macatalyst-x64. -->
+    <!-- For example: <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers> -->
+
+    <OutputType>Exe</OutputType>
+    <RootNamespace>snfcofcBlzrwb</RootNamespace>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableDefaultCssItems>false</EnableDefaultCssItems>
+    <Nullable>enable</Nullable>
+
+    <!-- Display name -->
+    <ApplicationTitle>XI INICIAL SFCO</ApplicationTitle>
+
+    <!-- App Identifier -->
+    <ApplicationId>com.ihsolutions.snfcofc</ApplicationId>
+
+    <!-- Versions -->
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+
+    <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
+    <WindowsPackageType>None</WindowsPackageType>
+
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+    <DefaultLanguage>es-mx</DefaultLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- App Icon -->
+    <MauiIcon Include="Resources\AppIcon\icon.png" ForegroundScale="0.3" Color="White" />
+    <MauiIcon Include="Resources\AppIcon\icon32.png" Color="#000000" />
+    <MauiIcon Include="Resources\AppIcon\icon50.png" ForegroundScale="0.3" Color="White"/>
+    <MauiIcon Include="Resources\AppIcon\icon512.png" ForegroundScale="0.2" Color="White" />
+    <MauiIcon Include="Resources\AppIcon\icon64.png" ForegroundScale="0.5" Color="White" />
+
+    <!-- Splash Screen -->
+	  <MauiSplashScreen Include="Resources\Splash\solutions.png" Color="White" />
+
+    <!-- Images -->
+    <MauiImage Include="Resources\Images\*" />
+    <MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
+
+    <!-- Custom Fonts -->
+    <MauiFont Include="Resources\Fonts\*" />
+
+    <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AndroidResource Remove="Services\**" />
+    <Compile Remove="Services\**" />
+    <Content Remove="Services\**" />
+    <EmbeddedResource Remove="Services\**" />
+    <MauiXaml Remove="Services\**" />
+    <None Remove="Services\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\AppIcon\icon.png" />
+    <None Remove="Resources\AppIcon\icon32.png" />
+    <None Remove="Resources\AppIcon\icon50.png" />
+    <None Remove="Resources\AppIcon\icon512.png" />
+    <None Remove="Resources\AppIcon\icon64.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiSplashScreen Include="Resources\Splash\solutions.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\snfcofcBlzrwb.Web\_Imports.razor" Link="_Imports.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="9.0.14" />
+    <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+    <PackageReference Include="Syncfusion.Blazor" Version="29.2.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\snfcofcBlzrwb.Shared\snfcofcBlzrwb.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

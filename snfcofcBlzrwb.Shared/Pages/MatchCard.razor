@@ -1,0 +1,167 @@
+﻿@using snfcofcBlzrwb.Models
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+@inject IMatchService MatchService
+
+
+<div class="col-md-6 mb-4 fade-card @(isDeleted ? "fade-out" : "")">
+    <SfCard CssClass="@($"{GetCardColor(Match.EstatusMatchId)} match-card")">
+        <CardHeader>
+            <div class="row align-items-center">
+                <div class="col-8">
+                    <CardTitle class="match-title">🆚 @Match.Rival</CardTitle>
+                    <span class="badge bg-secondary">Categoria @GetCategoria()</span>
+                </div>
+                @* <div class="col-4 text-end">
+                    @if (!string.IsNullOrEmpty(Match.FotoRival?.Url))
+                    {
+                        <img src="@Match.FotoRival.Url" class="rival-logo img-fluid rounded" />
+                    }
+                </div> *@
+            </div>
+        </CardHeader>
+
+        <CardContent>
+            @*             <p><strong>Fecha:</strong> @Match.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+ *@            <p><strong>Competencia:</strong> @Match.Competencia ?? "Stars League"</p>
+            <p><strong>Fase:</strong> @Match.FaseCompetencia</p>
+            <p><strong>Marcador:</strong> <span class="badge bg-dark">@Match.FaGoles - @Match.CoGoles</span></p>
+            <p><strong>Estatus:</strong> <span class="badge @GetEstatusBadge(Match.EstatusMatchId)">@GetEstatusTexto(Match.EstatusMatchId)</span></p>
+
+            <div class="text-end mt-3">
+                <button class="btn btn-outline-primary me-2" @onclick="EvaluarMatch">Evaluar</button>
+                <button class="btn btn-danger" @onclick="EliminarMatch" disabled="@isDeleting">
+                    @if (isDeleting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status">Eliminando...</span>
+
+                    }
+                    else
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status">Eliminar Partido</span>
+                    }
+                </button>
+
+            </div>
+        </CardContent>
+    </SfCard>
+</div>
+<style>
+    .match-card {
+    border-radius: 12px;
+    padding: 15px;
+    background-color: #fdfdfd;
+    transition: box-shadow 0.3s ease;
+    }
+
+    .match-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 5px;
+    }
+
+    .rival-logo {
+    max-height: 80px;
+    object-fit: contain;
+    border: 2px solid #dee2e6;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .card-win {
+    border-left: 10px solid #28a745;
+    }
+
+    .card-draw {
+    border-left: 10px solid #ffc107;
+    }
+
+    .card-loss {
+    border-left: 10px solid #dc3545;
+    }
+
+    .fade-card {
+        transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-out {
+        opacity: 0;
+        transform: scale(0.95);
+        pointer-events: none;
+    }
+</style>
+
+@code{
+    [Parameter] public MatchModel Match { get; set; }
+    [Parameter] public EventCallback<string> OnMatchDeleted { get; set; }
+    private bool isDeleting = false;
+    private bool isDeleted = false;
+    private string GetCardColor(int estatus)
+    {
+        return estatus switch
+        {
+            3 => "card-win",
+            1 => "card-draw",
+            0 => "card-loss",
+            _ => "card-draw"
+        };
+    }
+
+    private string GetEstatusTexto(int estatus)
+    {
+        return estatus switch
+        {
+            3 => "Ganado",
+            1 => "Empatado",
+            0 => "Perdido",
+            _ => "Sin definir"
+        };
+    }
+
+    private string GetEstatusBadge(int estatus)
+    {
+        return estatus switch
+        {
+            3 => "bg-success",
+            1 => "bg-warning text-dark",
+            0 => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetCategoria()
+    {
+        return Match.ClavePlus && Match.ClaveSub ? "????"
+             : Match.ClavePlus ? "Plus"
+             : Match.ClaveSub ? "Sub19"
+             : "Sin categoría";
+    }
+
+    private void EvaluarMatch()
+    {
+        if (!string.IsNullOrEmpty(Match?.ObjectId))
+        {
+            NavigationManager.NavigateTo($"/evaluate");
+        }
+    }
+
+    async Task EliminarMatch()
+    {
+        if (string.IsNullOrEmpty(Match?.ObjectId))
+        {
+            var confirm = await Confirmar($"¿Deseas eliminar la Jornada {Match.JNo} vs {Match.Rival}?");
+            if (confirm)
+            {
+                isDeleting = true;
+                await MatchService.DeleteAsync(Match.ObjectId);
+                isDeleted = true;
+                await OnMatchDeleted.InvokeAsync(Match.ObjectId);
+            }
+        }
+    }
+    private async Task<bool> Confirmar(string mensaje)
+    {
+        return await JSRuntime.InvokeAsync<bool>("confirm", new object[] { mensaje });
+    }
+}

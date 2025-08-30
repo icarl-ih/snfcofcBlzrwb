@@ -1,0 +1,152 @@
+﻿@using snfcofcBlzrwb.Models
+@inject NavigationManager NavigationManager
+@inject IPlayerService PlayerService
+@inject IJSRuntime JSRuntime
+
+<div class="col-md-6 mb-4 fade-card @(isDeleted ? "fade-out" : "")">
+    <SfCard CssClass="@($"{GetCardColor(Player.Ranking)} player-card")">
+        <CardHeader>
+            <CardTitle class="player-title text-center">@Player.Nombre</CardTitle>
+        </CardHeader>
+
+        <CardContent>
+            <div class="row">
+                <!-- Foto del jugador -->
+                <div class="col-4 d-flex justify-content-center">
+                    @if (!string.IsNullOrEmpty(Player.FotoPlayer?.Url))
+                    {
+                        <img src="@Player.FotoPlayer.Url" class="player-photo img-fluid rounded shadow-sm" />
+                    }
+                </div>
+
+                <!-- Datos del jugador -->
+                <div class="col-8 flex-column justify-content-between">
+                    <div>
+                        <p><strong>Posición:</strong> @Player.Posicion</p>
+                        <p><strong>Dorsal:</strong> @Player.Dorsal</p>
+                        <p><strong>Categoría:</strong> @(Player.ClavePlus ? Player.ClaveSub ? "Ambas Categorías" : "Plus" : Player.ClaveSub ? "Sub 19" : "Sin Categoría")</p>
+                        <p><strong>Ranking:</strong></p>
+                        <SfRating Value="@Player.Ranking" ReadOnly="true" ShowTooltip="false" CssClass="custom-rating" />
+                        @if (Player.Ranking >= 4.5)
+                        {
+                            <p class="badge bg-success text-white">⭐ Top Performer</p>
+                        }
+                        else if (Player.Ranking <= 2)
+                        {
+                            <p class="badge bg-danger text-white">⚠️ Bajo rendimiento</p>
+                        }
+                    </div>
+
+
+                    <div class="text-end mt-3">
+                        <button class="btn btn-primary" @onclick="EditarPlayer">Editar Player</button>
+                        <button class="btn btn-danger" @onclick="EliminarPlayer" disabled="@isDeleting">
+                            @if (isDeleting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status">Eliminando...</span>
+                                
+                            }
+                            else
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status">Eliminar Player</span>
+                                    }
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </CardContent>
+    </SfCard>
+</div>
+<style>
+    .player-card {
+    border-radius: 12px;
+    padding: 15px;
+    background-color: #fdfdfd;
+    transition: box-shadow 0.3s ease;
+    }
+
+    .player-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #343a40;
+    margin-bottom: 10px;
+    }
+
+    .player-photo {
+    height: 70%;
+    object-fit: cover;
+    border: 3px solid #dee2e6;
+    max-height : 200px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .card-green {
+    border-left: 15px solid #28a745;
+    box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+    }
+
+    .card-yellow {
+    border-left: 15px solid #ffc107;
+    box-shadow: 0 2px 6px rgba(255, 193, 7, 0.3);
+    }
+
+    .card-red {
+    border-left: 15px solid #dc3545;
+    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+    }
+
+    .custom-rating .e-rating-item-container .e-rating-icon {
+    color: #ffc107;
+    }
+
+    .fade-card {
+        transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-out {
+        opacity: 0;
+        transform: scale(0.95);
+        pointer-events: none;
+    }
+</style>
+
+@code {
+    [Parameter] public Player Player { get; set; }
+    [Parameter] public EventCallback<string> OnPlayerDeleted { get; set; }
+
+    private bool isDeleting = false;
+    private bool isDeleted = false;
+
+    private string GetCardColor(float ranking)
+    {
+        if (ranking >= 4.5) return "card-green";
+        if (ranking >= 3) return "card-yellow";
+        return "card-red";
+    }
+
+    void EditarPlayer()
+    {
+        if (!string.IsNullOrEmpty(Player?.ObjectId))
+        {
+            NavigationManager.NavigateTo($"/playercrud/{Player.ObjectId}");
+        }
+    }
+
+    async Task EliminarPlayer()
+    {
+        if (string.IsNullOrEmpty(Player?.ObjectId)) return;
+
+        var confirm = await Confirmar($"¿Eliminar a {Player.Nombre}?");
+        if (confirm)
+        {
+            isDeleting = true;
+            await PlayerService.DeleteAsync(Player.ObjectId);
+            isDeleted = true;
+            await OnPlayerDeleted.InvokeAsync(Player.ObjectId);
+        }
+    }
+    private async Task<bool> Confirmar(string mensaje)
+    {
+        return await JSRuntime.InvokeAsync<bool>("confirm", new object[] { mensaje });
+    }
+}

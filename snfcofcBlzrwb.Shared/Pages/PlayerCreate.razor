@@ -1,0 +1,184 @@
+﻿
+@page "/playercrud/new"
+@using System.Net.Http.Headers
+@inject IPlayerService PlayerService
+@inject HttpClient Http
+@inject NavigationManager Navigation
+<h2 class="form-title">📋 Registro de Jugador</h2>
+
+<div class="card player-form-card">
+    <div class="card-body">
+        <EditForm Model="@player" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label class="form-label">Nombre:</label>
+                <InputText @bind-Value="player.Nombre" class="form-control input-lg" placeholder="Ej. Juan Pérez" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Posición:</label>
+                <InputText @bind-Value="player.Posicion" class="form-control input-lg" placeholder="Ej. DFC" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Dorsal:</label>
+                <InputNumber @bind-Value="player.Dorsal" class="form-control input-lg" placeholder="Ej. 10" />
+            </div>
+
+            <div class="form-check mb-3">
+                <InputCheckbox @bind-Value="player.ClaveSub" class="form-check-input" id="claveSub" />
+                <label class="form-check-label" for="claveSub">Es Sub 19</label>
+            </div>
+
+            <div class="form-check mb-4">
+                <InputCheckbox @bind-Value="player.ClavePlus" class="form-check-input" id="clavePlus" />
+                <label class="form-check-label" for="clavePlus">Es Categoría Plus</label>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Ranking (0 a 5):</label>
+                <InputNumber @bind-Value="player.Ranking" step="0.1" min="0" max="5" class="form-control input-lg" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Foto del Jugador:</label><br />
+                @if (!string.IsNullOrEmpty(player.FotoPlayer?.Url))
+                {
+                    <img src="@player.FotoPlayer.Url" alt="Foto Player" class="img-preview" />
+                }
+                <InputFile OnChange="OnInputFileChange" />
+            </div>
+
+            <button type="submit" class="btn btn-primary submit-button">
+                <i class="fas fa-save me-2"></i> Guardar
+            </button>
+        </EditForm>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-info mt-4 text-center">@message</div>
+        }
+    </div>
+</div>
+<style>
+    .form-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 30px;
+        color: #2c3e50;
+    }
+
+    .player-form-card {
+        border-radius: 16px;
+        background-color: #ffffff;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        padding: 30px;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+        color: #34495e;
+    }
+
+    .input-lg {
+        padding: 12px 16px;
+        font-size: 1.1rem;
+        border-radius: 8px;
+    }
+
+    .img-preview {
+        max-width: 180px;
+        max-height: 180px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        margin-bottom: 12px;
+    }
+
+    .submit-button {
+        width: 100%;
+        padding: 14px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+        .submit-button:hover {
+            background-color: #0056b3;
+            box-shadow: 0 0 12px rgba(0,0,0,0.15);
+        }
+</style>
+
+@code {
+    private Player player = new Player();
+    private string message;
+
+    [Parameter] public string PlayerId { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+            player = new Player();
+        
+        // Si quieres cargar un player existente para editar, hazlo aquí
+        // Ejemplo: player = await PlayerService.GetPlayerById(id);
+        // Por ahora inicializamos uno nuevo
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+                           // Crear nuevo player
+                await PlayerService.CreatePlayerAsync(player);
+                message = "Jugador creado correctamente.";
+            
+        }
+        catch (Exception ex)
+        {
+            message = $"Error: {ex.Message}";
+        }
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        string namefoto = $"{player.Nombre}.jpj";
+
+        if (file != null)
+        {
+            // Leer archivo en memoria (puedes limitar tamaño)
+            var buffer = new byte[file.Size];
+            await file.OpenReadStream(maxAllowedSize: 10*1024*1024).ReadAsync(buffer);
+            var info = await PlayerService.SubirFotoUsuarioAsync(buffer, namefoto);
+            // Asignar la URL a FotoPlayer
+            if (info.url != null)
+            {
+                player.FotoPlayer = new ParseFile
+                    {
+                        Name = info.name,
+                        Type = "File"
+
+                    };
+                StateHasChanged();
+            }
+
+
+        }
+    }
+
+    
+}
