@@ -142,15 +142,39 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             response.EnsureSuccessStatusCode();
         }
 
-        private readonly RemoteService _remoteService;
-        public PlayerRemoteService(RemoteService remoteService)
-        {
-            _remoteService = remoteService;
-        }
-        
+
         public async Task<(string name, string url)> SubirFotoUsuarioAsync(byte[] data, string nombreArchivo)
         {
-            return await _remoteService.SubirFotoUsuarioAsync(data, nombreArchivo);
+            string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
+            client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
+            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sessionToken);
+
+            var tipoMime = "image/jpeg";
+            if (nombreArchivo.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                tipoMime = "image/png";
+            else if (nombreArchivo.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || nombreArchivo.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
+                tipoMime = "image/jpeg";
+            else if (nombreArchivo.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
+                tipoMime = "image/gif";
+            var content = new ByteArrayContent(data);
+            content.Headers.ContentType = new MediaTypeHeaderValue(tipoMime);
+
+            var response = await client.PostAsync($"https://parseapi.back4app.com/files/{nombreArchivo}", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"No se pudo subir el archivo: {errorContent}");
+            }
+
+            var result = await response.Content.ReadAsStringAsync();
+            var json = JsonDocument.Parse(result);
+            return (
+                json.RootElement.GetProperty("name").GetString(),
+                json.RootElement.GetProperty("url").GetString()
+            );
         }
 
         public async Task DeleteAsync(string objectId)

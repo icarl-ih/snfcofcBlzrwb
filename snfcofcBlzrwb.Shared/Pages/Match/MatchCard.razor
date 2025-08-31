@@ -11,26 +11,40 @@
             <div class="row align-items-center">
                 <div class="col-8">
                     <CardTitle class="match-title">🆚 @Match.Rival</CardTitle>
-                    <span class="badge bg-secondary">Categoria @GetCategoria()</span>
-                </div>
-                @* <div class="col-4 text-end">
                     @if (!string.IsNullOrEmpty(Match.FotoRival?.Url))
                     {
-                        <img src="@Match.FotoRival.Url" class="rival-logo img-fluid rounded" />
+                        <img src="@Match.FotoRival.Url" class="rival-logo img-fluid rounded" height="30" />
                     }
-                </div> *@
+                </div>
+                
             </div>
         </CardHeader>
 
         <CardContent>
             @*             <p><strong>Fecha:</strong> @Match.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
- *@            <p><strong>Competencia:</strong> @Match.Competencia ?? "Stars League"</p>
+ *@            @*@(Player.ClavePlus ? Player.ClaveSub ? "Ambas Categorías" : "Plus" : Player.ClaveSub ? "Sub 19" : "Sin Categoría")*@
+            <p><strong>Categoría @(Match.ClavePlus ? "Plus": Match.ClaveSub ? "Sub 19" : "????") </strong></p>
+            <p><strong>Competencia:</strong> @Match.Competencia</p>
             <p><strong>Fase:</strong> @Match.FaseCompetencia</p>
             <p><strong>Marcador:</strong> <span class="badge bg-dark">@Match.FaGoles - @Match.CoGoles</span></p>
             <p><strong>Estatus:</strong> <span class="badge @GetEstatusBadge(Match.EstatusMatchId)">@GetEstatusTexto(Match.EstatusMatchId)</span></p>
 
             <div class="text-end mt-3">
-                <button class="btn btn-outline-primary me-2" @onclick="EvaluarMatch">Evaluar</button>
+                @if (Match.EstatusMatchId == 0)
+                {
+                    <button class="btn btn-warning" @onclick="() => JugarPartido(Match.ObjectId)">
+                        ⚽ Jugar Partido
+                    </button>
+                    <button class="btn btn-success" disabled>
+                        Evaluar
+                    </button>
+                }
+                else
+                {
+                    <button class="btn btn-outline-primary me-2" @onclick="EvaluarMatch">Evaluar</button>
+                    
+                }
+
                 <button class="btn btn-danger" @onclick="EliminarMatch" disabled="@isDeleting">
                     @if (isDeleting)
                     {
@@ -113,8 +127,9 @@
         return estatus switch
         {
             3 => "Ganado",
-            1 => "Empatado",
-            0 => "Perdido",
+            2 => "Empatado",
+            1 => "Perdido",
+            0 => "Por Jugar",
             _ => "Sin definir"
         };
     }
@@ -124,8 +139,9 @@
         return estatus switch
         {
             3 => "bg-success",
-            1 => "bg-warning text-dark",
-            0 => "bg-danger",
+            2 => "bg-warning text-dark",
+            1 => "bg-danger",
+            0 => "bg-secondary",
             _ => "bg-secondary"
         };
     }
@@ -145,7 +161,17 @@
             NavigationManager.NavigateTo($"/evaluate");
         }
     }
-
+    private string GetResultadoTexto(int estatus)
+    {
+        return estatus switch
+        {
+            0 => "Por jugar",
+            1 => "Perdido",
+            2 => "Empate",
+            3 => "Ganado",
+            _ => "Desconocido"
+        };
+    }
     async Task EliminarMatch()
     {
         if (string.IsNullOrEmpty(Match?.ObjectId))
@@ -160,6 +186,11 @@
             }
         }
     }
+    private void JugarPartido(string matchId)
+    {
+        NavigationManager.NavigateTo($"/match/play/{matchId}");
+    }
+
     private async Task<bool> Confirmar(string mensaje)
     {
         return await JSRuntime.InvokeAsync<bool>("confirm", new object[] { mensaje });

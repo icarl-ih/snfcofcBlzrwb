@@ -15,6 +15,8 @@ namespace snfcofcBlzrwb.Models
         public int LocalId { get; set; }
         [JsonPropertyName("objectId")]
         public string ObjectId { get; set; }
+        [JsonPropertyName("RivalObjectId")]
+        public string RivalObjectId { get; set; }
         [JsonPropertyName("IsSynced")]
         public bool IsSynced { get; set; }
 
@@ -35,7 +37,7 @@ namespace snfcofcBlzrwb.Models
         [JsonPropertyName("JNo")]
             public int JNo { get; set; }
         [JsonPropertyName("EstatusMatchId")]
-        public int EstatusMatchId { get; set; } // 3 = Ganado,  1 = Empate, 0 = Perdido
+        public int EstatusMatchId { get; set; } = 0; // 3 = Ganado,  2 = Empate, 1 = Perdido y 0 = Pendiente de jugar
         [JsonPropertyName("Competencia")]
         public string Competencia { get; set; }
         [JsonPropertyName("FaseCompetencia")]

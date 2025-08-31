@@ -2,8 +2,11 @@
 @inject NavigationManager NavigationManager
 @inject IMatchService MatchService
 @using Syncfusion.Blazor.Buttons
-<h3 class="section-title">📋 Jugadores Registrados</h3>
+<h3 class="section-title">📋 Juegos Jugados</h3>
 
+<BacktoHomeButton>
+    🏠 Ir al inicio
+</BacktoHomeButton>
 @if (isRefreshing)
 {
     <p class="text-muted"></p>
@@ -23,9 +26,11 @@ else
         </div>
 
         <div class="d-flex justify-content-center mt-4">
-            <button class="btn btn-lg btn-success action-button" @onclick="NuevoPlayer">
-                ➕ Nuevo Jugador
-            </button>
+            <NavButton Label="➕ Nuevo Partido"
+                       TargetUrl="/match/new"
+                       ButtonClass="btn btn-lg btn-success action-button"
+                       ConfirmBeforeNavigate="true"
+                       ConfirmMessage="¿Deseas registrar un nuevo partido?" />
         </div>
     }
     else if (showAlert)
@@ -98,7 +103,7 @@ else
     private List<MatchModel> partidos;
 
     private bool showAlert = false;
-    void NuevoPlayer() => NavigationManager.NavigateTo("/match/new");
+    void NuevoMatch() => NavigationManager.NavigateTo("/match/new");
     private bool isRefreshing = false;
 
     private async Task Refesh()
@@ -125,7 +130,7 @@ else
 
                 // Espera breve para mostrar la alerta antes de redirigir
                 await Task.Delay(10000);
-                NuevoPlayer();
+                NuevoMatch();
             }
         }
 

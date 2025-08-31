@@ -11,49 +11,51 @@ using System.Threading.Tasks;
 
 namespace snfcofcBlzrwb.Shared.Services.Remote
 {
-    public class MatchRemoteService : IMatchService
+    public class TeamsRemoteService : ITeamService
     {
         private readonly HttpClient _http;
-        private readonly AppSettings _appSettings;
         public bool IsOnline { get; private set; } = true;
 
-        public MatchRemoteService(HttpClient http)
+        public void SetConnectivity(bool isOnline) => IsOnline = isOnline;
+
+        public TeamsRemoteService(HttpClient http)
         {
             _http = http;
+
+            // Configurar BaseAddress si no está ya configurado
             if (_http.BaseAddress == null)
                 _http.BaseAddress = new Uri("https://parseapi.back4app.com/");
+
+            // Agregar headers si no están presentes
             if (!_http.DefaultRequestHeaders.Contains("X-Parse-Application-Id"))
                 _http.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
 
             if (!_http.DefaultRequestHeaders.Contains("X-Parse-REST-API-Key"))
                 _http.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-
         }
-        public void SetConnectivity(bool isOnline) => IsOnline = isOnline;
 
-        public async Task<List<MatchModel>> GetAllAsync()
+        public async Task<List<TeamModel>> GetAllAsync()
         {
-            //_http.BaseAddress = new Uri("https://parseapi.back4app.com/");
-            //_http.DefaultRequestHeaders.Add("X-Parse-Application-Id", _appSettings.ApplicationId);
-            //_http.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", _appSettings.RestApiKey);
-
-            var response = await _http.GetAsync("/classes/Match");
+            var response = await _http.GetAsync("classes/Teams");
             response.EnsureSuccessStatusCode();
+
             var json = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<ParseResponse<MatchModel>>(json);
-            return result?.Results ?? new List<MatchModel>();
+            var result = JsonSerializer.Deserialize<ParseResponse<TeamModel>>(json);
+
+            return result?.Results ?? new List<TeamModel>();
         }
 
-        public async Task<MatchModel?> GetByIdAsync(string objectId)
+        public async Task<TeamModel?> GetByIdAsync(string objectId)
         {
-            var response = await _http.GetAsync($"/classes/Match/{objectId}");
+            var response = await _http.GetAsync($"/classes/Teams/{objectId}");
             if (!response.IsSuccessStatusCode) return null;
 
             var json = await response.Content.ReadAsStringAsync();
-            var match = JsonSerializer.Deserialize<MatchModel>(json);
-            return match;
+            var team = JsonSerializer.Deserialize<TeamModel>(json);
+            return team;
         }
-        public async Task SaveAsync(MatchModel match)
+
+        public async Task SaveAsync(TeamModel team)
         {
             string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
             var client = new HttpClient();
@@ -63,20 +65,27 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
 
             var parseObject = new Dictionary<string, object>
             {
+                {"NombreEquipo",team.NombreEquipo },
+                {"ClaveSub",team.ClaveSub},
+                {"ClavePlus", team.ClavePlus},
+                {"Competencia",team.Competencia}
                 
-                {"EstatusMatchId",match.EstatusMatchId },
-                
-                {"FaGoles",match.FaGoles },{"CoGoles",match.CoGoles}
-            
             };
-            
 
+            if(team.FotoEscudo != null)
+            {
+                parseObject["FotoEscudo"] = new Dictionary<string, object>
+                {
+                    { "__type", "File" },
+                    { "name", team.FotoEscudo.Name }
+                };
+            }
             var json = JsonSerializer.Serialize(parseObject);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _http.PutAsync(
-                           $"https://parseapi.back4app.com/classes/Match/{match.ObjectId}",
-                           content);
+            var response = await client.PutAsync(
+                $"https://parseapi.back4app.com/classes/Teams/{team.ObjectId}",
+                content);
 
             if (response.IsSuccessStatusCode)
             {
@@ -92,49 +101,39 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             }
         }
 
-        public async Task CreateMatch(MatchModel match)
+        public async Task CreateTeamAsync(TeamModel team)
         {
             int.TryParse(Guid.NewGuid().ToString(), out var id);
-            match.LocalId = id;
-            
+            team.LocalId = id;
             var parseObject = new Dictionary<string, object>
             {
-                {"LocalId",match.LocalId },
-                {"RivalObjectId",match.RivalObjectId },
-                { "IsSynced", true },
-                { "Rival" , match.Rival },
-                {"FotoRival","" },
-                {"ClaveSub",match.ClaveSub },
-                {"ClavePlus",match.ClavePlus },
-                {"JNo",match.JNo },
-                {"EstatusMatchId",match.EstatusMatchId },
-                {"Competencia",match.Competencia },
-                {"FaseCompetencia",match.FaseCompetencia},
-                {"FaGoles",match.FaGoles },{"CoGoles",match.CoGoles}
+                {"LocalId",team.LocalId},
+                {"NombreEquipo",team.NombreEquipo },
+                {"ClaveSub",team.ClaveSub},
+                {"ClavePlus", team.ClavePlus},
+                {"Competencia",team.Competencia},
+                {"FotoEscudo","" }
 
             };
-            if (match.FotoRival != null)
+
+            if (team.FotoEscudo != null)
             {
-                parseObject["FotoRival"] = new Dictionary<string, object>
+                parseObject["FotoEscudo"] = new Dictionary<string, object>
                 {
-                    {"__type", "File" },
-                    { "name", match.FotoRival.Name }
+                    { "__type", "File" },
+                    { "name", team.FotoEscudo.Name }
                 };
             }
+
             var json = JsonSerializer.Serialize(parseObject);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _http.PostAsync("/classes/Match", content);
+            var response = await _http.PostAsync("/classes/Teams", content);
             response.EnsureSuccessStatusCode();
         }
 
-        private readonly RemoteService _remoteService;
-        public MatchRemoteService(RemoteService remoteService)
-        {
-            _remoteService = remoteService;
-        }
-
-        public async Task<(string name, string url)> SubirFotoEquipoAsync(byte[] data, string nombreArchivo)
+        
+        public async Task<(string name, string url)> SubirFotoTeamAsync(byte[] data, string nombreArchivo)
         {
             string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
             var client = new HttpClient();
@@ -167,20 +166,18 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
                 json.RootElement.GetProperty("url").GetString()
             );
         }
-        public async Task DeleteAsync(string objectId) {
-            _http.DefaultRequestHeaders.Add("X-Parse-Application-Id", _appSettings.ApplicationId);
-            _http.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", _appSettings.RestApiKey);
-            _http.DefaultRequestHeaders.Add("X-Parse-Session-Token", _appSettings.SessionToken);
 
-            var response = await _http.DeleteAsync($"https://parseapi.back4app.com/classes/Match/{objectId}");
+        public async Task DeleteAsync(string objectId)
+        {
+            string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
+            client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
+            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sessionToken);
+
+            var response = await client.DeleteAsync($"https://parseapi.back4app.com/classes/Teams/{objectId}");
             response.EnsureSuccessStatusCode();
         }
 
-
-        
-        
-
-        public Task<List<MatchModel>> GetUnsyncedAsync() =>
-            Task.FromResult(new List<MatchModel>());
     }
 }

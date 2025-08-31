@@ -43,6 +43,7 @@ namespace snfcofcBlzrwb.Shared.Services.Implementations
 
         public Task<List<PlayerEvaluation>> GetUnsyncedAsync() =>
             _local.GetUnsyncedAsync();
+        public async Task CreateEvaluationAsync(PlayerEvaluation evaluation) => _remote.CreateEvaluationAsync(evaluation);
     }
 
 

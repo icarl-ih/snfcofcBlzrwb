@@ -1,113 +1,360 @@
-﻿
-@page "/evaluate"
+﻿@page "/evaluate/{PlayerId}"
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Inputs
+@using System.Net.Http.Headers
+@inject HttpClient Http
+
 @inject IPlayerService PlayerService
 @inject IMatchService MatchService
 @inject IEvaluationService EvaluationService
 @inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
 <h3>📋 Evaluación de Jugador</h3>
 
-<EditForm Model="@Evaluation" OnValidSubmit="SaveEvaluation">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <!-- Selección de jugador -->
-    <div class="mb-3">
-        <label><strong>Jugador:</strong></label>
-        <InputSelect @bind-Value="Evaluation.PlayerObjectId" class="form-select">
-            <option value="">-- Selecciona jugador --</option>
-            @foreach (var p in Players)
-            {
-                <option value="@p.ObjectId">@p.Nombre</option>
-            }
-        </InputSelect>
-        <button class="btn btn-lg btn-success action-button" @onclick="NuevoPlayer">
-                ➕ Nuevo Jugador
-            </button>
+@if (IsLoading)
+{
+    <div class="d-flex justify-content-center align-items-center" style="height:200px;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
     </div>
+}
+else if (Player == null)
+{
+    <p class="text-danger">No se encontró el jugador.</p>
+}
+else if (Matches == null)
+{
+    <p class="text-danger">No hay partidos para evaluar</p>    
+}
+else
+{
+    <EditForm Model="@Evaluation" OnValidSubmit="SaveEvaluation">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-    <!-- Selección de partido -->
-<div class="mb-3">
-    <label><strong>Partido:</strong></label>
-    <InputSelect @bind-Value="Evaluation.MatchObjectId" class="form-select">
-        <option value="">-- Selecciona partido --</option>
-        @foreach (var m in Matches)
-        {
-            <option value="@m.ObjectId">Jornada: @m.JNo - Categoría: @m.ClavePlus ? "Plus": @m.ClaveSub ? "Sub19" : "????"</option>
-        }
-    </InputSelect>
-        <button class="btn btn-lg btn-success action-button" @onclick="NuevoMatch">
-            ➕ Nuevo Partido
-        </button>
-</div>
-
-    <SfCard>
-        <CardHeader><CardTitle>Evaluación Técnica</CardTitle></CardHeader>
-        <CardContent>
-            <label><strong>Habilidad en el campo (1–10)</strong></label>
-            <SfSlider TValue="int" Min="1" Max="10" Step="1" @bind-Value="Evaluation.FieldSkillScore" ShowButtons="true">
-                <SliderTooltip IsVisible="true" />
-            </SfSlider>
-        </CardContent>
-    </SfCard>
-
-    <SfCard>
-        <CardHeader><CardTitle>Disciplina (30%)</CardTitle></CardHeader>
-        <CardContent>
-            <SfCheckBox @bind="Evaluation.RespetaCompaneros">Respeta a sus compañeros (20pts)</SfCheckBox>
-            <SfCheckBox @bind="Evaluation.RespetaTecnico">Respeta al cuerpo técnico (20pts)</SfCheckBox>
-            <SfCheckBox @bind="Evaluation.RespetaArbitro">Respeta al cuerpo arbitral (20pts)</SfCheckBox>
-
-            <div class="mb-2">
-                <label>Tarjetas recibidas:</label>
-                <InputNumber @bind-Value="Evaluation.Tarjetas" class="form-control" />
-            </div>
-            <div class="mb-2">
-                <label>Faltas por lenguaje:</label>
-                <InputNumber @bind-Value="Evaluation.FaltasLenguaje" class="form-control" />
-            </div>
-        </CardContent>
-    </SfCard>
-
-    <SfCard>
-        <CardHeader><CardTitle>Asistencia y Puntualidad (60%)</CardTitle></CardHeader>
-        <CardContent>
-            <SfCheckBox @bind="Evaluation.Asistio">Asistió al juego (50pts)</SfCheckBox>
-
-            <SfCheckBox @bind="Evaluation.FuePuntual" Enabled="@Evaluation.Asistio">Fue puntual (50pts)</SfCheckBox>
-
-            @if (Evaluation.FuePuntual)
-            {
-                <div class="mb-2">
-                    <label>Minutos antes del juego:</label>
-                    <InputNumber @bind-Value="Evaluation.MinutosAntes" class="form-control" />
+        <!-- Sección de jugador -->
+        <SfCard CssClass="sf-card-custom mb-4">
+            <CardHeader>
+                <div class="d-flex align-items-center">
+                    <img src="@(Player?.FotoPlayer?.Url ?? "img/default.png")"
+                         class="rounded-circle me-3"
+                         style="width: 100px; height: 100px;" />
+                    <div>
+                        <h5>@Player.Nombre</h5>
+                        <p class="text-muted">
+                            Categoría: @(
+                                Player.ClavePlus
+                                    ? (Player.ClaveSub ? "Ambas Categorías" : "Plus")
+                                    : (Player.ClaveSub ? "Sub 19" : "Sin Categoría")
+                            )
+                        </p>
+                    </div>
                 </div>
+            </CardHeader>
+
+            <CardContent>
+                <h6>Evaluaciones anteriores</h6>
+                <ul class="list-group">
+                    @if (PartidosEvaluados != null && PartidosEvaluados.Any())
+                    {
+                        @foreach (var eval in PartidosEvaluados)
+                        {
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>🆚 @eval.Rival</span>
+                                <span class="badge bg-primary">@((EstatusMatch)eval.EstatusMatchId)</span>
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        <li class="list-group-item text-muted">Sin evaluaciones</li>
+                    }
+                </ul>
+            </CardContent>
+        </SfCard>
+
+        <!-- Selección de partido -->
+        <SfCard CssClass="sf-card-custom mb-4">
+            <CardHeader>
+                <h6>Partido a evaluar</h6>
+            </CardHeader>
+
+            <CardContent>
+                <label class="form-label"><strong>Selecciona partido:</strong></label>
+
+                <InputSelect Value="@SelectedMatchId"
+                             ValueChanged="@ValueChangedCallback"
+                             ValueExpression="() => SelectedMatchId"
+                             class="form-select">
+                    <option value="">-- Selecciona --</option>
+                    @foreach (var partido in PartidosPendientes)
+                    {
+                        <option value="@partido.ObjectId">🆚 @partido.Rival</option>
+                    }
+                </InputSelect>
+        @* @if (PartidosPendientes is not null && PartidosPendientes.Any())
+        {
+            @foreach (var partido in PartidosPendientes)
+            {
+                <option value="@partido.ObjectId">🆚 @partido.Rival</option>
             }
-        </CardContent>
-    </SfCard>
+        } *@
 
-    <SfTextArea @bind="Evaluation.Comentarios" Placeholder="Comentarios del entrenador" Rows="4" />
+            </CardContent>
+        </SfCard>
 
-    <SfButton Type="Submit" CssClass="e-primary mt-3">Guardar Evaluación</SfButton>
-</EditForm>
+        <!-- Asistencia -->
+        <SfCard CssClass="sf-card-custom mb-4">
+            <CardHeader><CardTitle>Asistencia</CardTitle></CardHeader>
+            <CardContent>
+                <SfCheckBox TChecked="bool" @bind-Checked="Evaluation.Asistio">Asistió al juego (50pts)</SfCheckBox>
 
-@code{
-    List<Player> Players = new();
-    List<MatchModel> Matches = new();
-    PlayerEvaluation Evaluation = new();
-    void NuevoPlayer() => Navigation.NavigateTo("/playercrud/new");
-    void NuevoMatch() => Navigation.NavigateTo("/match/new");
-    protected override async Task OnInitializedAsync()
-    {
-        Players = await PlayerService.GetAllAsync();
-        Matches = await MatchService.GetAllAsync();
+                @if (MostrarCamposEvaluacion)
+                {
+
+                    <InputCheckbox TChecked="bool"
+                                   Checked="@Evaluation.FuePuntual"
+                                   CheckedChanged="@((bool value) => Evaluation.FuePuntual = value)"
+                                   ValueExpression="() => Evaluation.FuePuntual"
+                                   Enabled="@Evaluation.Asistio">
+                        Fue puntual (50pts)
+                    </InputCheckbox>
+
+                    @if (Evaluation.FuePuntual)
+                    {
+                        <div class="mb-2">
+                            <label>Minutos antes del juego:</label>
+                            <InputNumber @bind-Value="Evaluation.MinutosAntes" class="form-control" />
+                        </div>
+                    }
+                }
+            </CardContent>
+        </SfCard>
+
+        @if (MostrarCamposEvaluacion)
+        {
+            <!-- Evaluación Técnica -->
+            <SfCard CssClass="sf-card-custom mb-4">
+                <CardHeader><CardTitle>Evaluación Técnica</CardTitle></CardHeader>
+                <CardContent>
+                    <label><strong>Habilidad en el campo (1–10)</strong></label>
+                    <SfSlider TValue="int" Min="1" Max="10" Step="1" @bind-Value="Evaluation.FieldSkillScore" ShowButtons="true">
+                        <SliderTooltip IsVisible="true" />
+                    </SfSlider>
+                </CardContent>
+            </SfCard>
+
+            <!-- Disciplina -->
+            <SfCard CssClass="sf-card-custom mb-4">
+                <CardHeader><CardTitle>Disciplina (30%)</CardTitle></CardHeader>
+                <CardContent>
+                    <InputCheckbox TChecked="bool"
+                                   Checked="@Evaluation.RespetaCompaneros"
+                                   CheckedChanged="@((bool value) => Evaluation.RespetaCompaneros = value)"
+                                   ValueExpression="() => Evaluation.RespetaCompaneros">
+                        Respeta a sus compañeros (20pts)
+                    </InputCheckbox>
+
+                    <InputCheckbox TChecked="bool"
+                                   Checked="@Evaluation.RespetaTecnico"
+                                   CheckedChanged="@((bool value) => Evaluation.RespetaTecnico = value)"
+                                   ValueExpression="() => Evaluation.RespetaTecnico">
+                        Respeta al cuerpo técnico (20pts)
+                    </InputCheckbox>
+
+                    <InputCheckbox TChecked="bool"
+                                   Checked="@Evaluation.RespetaArbitro"
+                                   CheckedChanged="@((bool value) => Evaluation.RespetaArbitro = value)"
+                                   ValueExpression="() => Evaluation.RespetaArbitro">
+                        Respeta al cuerpo arbitral (20pts)
+                    </InputCheckbox>
+                    <div class="mb-2">
+                        <label>Tarjetas recibidas:</label>
+                        <InputNumber @bind-Value="Evaluation.Tarjetas" class="form-control" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Faltas por lenguaje:</label>
+                        <InputNumber @bind-Value="Evaluation.FaltasLenguaje" class="form-control" />
+                    </div>
+                </CardContent>
+            </SfCard>
+        }
+
+        <!-- Comentarios -->
+        <InputTextArea  @bind-Value="Evaluation.Comentarios" Placeholder="Comentarios del entrenador" Rows="4" />
+
+        <!-- Puntaje calculado -->
+        <SfCard CssClass="sf-card-custom mb-4">
+            <CardHeader><CardTitle>Puntaje Calculado</CardTitle></CardHeader>
+            <CardContent>
+                <SfProgressBar Value="@PuntajeCalculado" Minimum="0" Maximum="5"
+                               Text="@(PuntajeCalculado.ToString("0.00") + " / 5")" />
+            </CardContent>
+        </SfCard>
+
+        <p class="text-danger">@message</p>
+
+        <SfButton Type="Submit" CssClass="e-primary mt-3">Guardar Evaluación</SfButton>
+    </EditForm>
+}
+
+<style>
+    h3 {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 0.5rem;
     }
 
-    async Task SaveEvaluation()
-    {
-        
+    h5 {
+        font-weight: 600;
+        color: #34495e;
+    }
 
-        // Cálculo de puntaje
+    h6 {
+        font-weight: 500;
+        color: #2980b9;
+        margin-bottom: 0.75rem;
+    }
+
+    .sf-card-custom {
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: 1px solid #e0e0e0;
+        padding: 1rem;
+        background-color: #fff;
+    }
+
+    input[type="checkbox"] {
+        accent-color: #3498db;
+    }
+
+    label {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        color: #2c3e50;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .list-group-item {
+        border: none;
+        padding: 0.75rem 1rem;
+        background-color: #f9f9f9;
+        margin-bottom: 0.5rem;
+        border-radius: 8px;
+    }
+
+    .badge.bg-primary {
+        background-color: #3498db;
+        font-size: 0.85rem;
+        padding: 0.4em 0.6em;
+    }
+
+    .e-slider-container {
+        margin-top: 1rem;
+    }
+
+    .e-progressbar {
+        height: 20px;
+        border-radius: 10px;
+        background-color: #ecf0f1;
+    }
+
+        .e-progressbar .e-progress {
+            background-color: #27ae60;
+        }
+
+    .e-primary {
+        background-color: #2980b9;
+        border-color: #2980b9;
+        font-weight: 600;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+    }
+</style>
+
+@code {
+    Player Player;
+    [Parameter] public string PlayerId { get; set; }
+    MatchModel SelectedMatch = new MatchModel();
+    List<MatchModel> Matches = new List<MatchModel>();
+    List<MatchModel> PartidosPendientes = new List<MatchModel>();
+    List<MatchModel> PartidosEvaluados = new List<MatchModel>();
+    PlayerEvaluation Evaluation = new PlayerEvaluation();
+    List<PlayerEvaluation> Evaluaciones = new List<PlayerEvaluation>();
+    private string SelectedMatchId;
+    private bool MostrarCamposEvaluacion => Evaluation.Asistio;
+    private float PuntajeCalculado => CalcularPuntaje();
+    private string message;
+    private bool IsLoading = true;
+
+    private EventCallback<string> ValueChangedCallback =>
+    EventCallback.Factory.Create<string>(this, OnMatchSelected);
+
+    public enum EstatusMatch
+    {
+        Pendiente = 1,
+        EnJuego = 2,
+        Finalizado = 3,
+        Suspendido = 4
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(PlayerId))
+                throw new Exception("Sin PlayerID");
+
+            Player = await PlayerService.GetByIdAsync(PlayerId);
+
+            if (Player == null)
+                throw new Exception($"Jugador con ID {PlayerId} no encontrado.");
+
+            Matches = await MatchService.GetAllAsync();
+            Evaluaciones = await EvaluationService.GetAllAsync();
+
+            // IDs de partidos ya evaluados por este jugador
+            var evaluadosIds = Evaluaciones
+                .Where(e => e.PlayerObjectId == PlayerId)
+                .Select(e => e.MatchObjectId)
+                .ToHashSet();
+
+            PartidosPendientes = Matches
+                .Where(m => m.ClaveSub == Player.ClaveSub || m.ClavePlus == Player.ClavePlus)
+                .Where(m => !evaluadosIds.Contains(m.ObjectId))
+                .ToList();
+
+            PartidosEvaluados = Matches
+                .Where(m => evaluadosIds.Contains(m.ObjectId))
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            message = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+    private void OnAsistioChanged(bool value)
+    {
+        Evaluation.Asistio = value;
+        
+    }
+    private float CalcularPuntaje()
+    {
+        if (!Evaluation.Asistio) return 0;
+
         float habilidad = Evaluation.FieldSkillScore * 0.1f;
 
         int disciplina = 0;
@@ -136,13 +383,38 @@
         float asistenciaScore = asistencia * 0.6f / 100f;
 
         float totalScore = habilidad + disciplinaScore + asistenciaScore;
-        float evaluacionFinal = (totalScore * 5f); // Escala 0–5
+        return totalScore * 5f;
+    }
 
-        // Promediar con el rating actual
-        var player = await PlayerService.GetByIdAsync(Evaluation.PlayerObjectId);
-        player.Ranking = (player.Ranking + evaluacionFinal) / 2f;
+    async Task SaveEvaluation()
+    {
+        Evaluation.PlayerObjectId = PlayerId;
+        Evaluation.PlayerObjectId = Player.ObjectId;
+        Evaluation.MatchObjectId = SelectedMatch.ObjectId;
+        var player = await PlayerService.GetByIdAsync(PlayerId);
+        player.Ranking = (player.Ranking + PuntajeCalculado) / 2f;
 
         await PlayerService.SaveAsync(player);
-        await EvaluationService.SaveAsync(Evaluation);
+        await EvaluationService.CreateEvaluationAsync(Evaluation);
     }
+
+
+    private Task OnMatchSelected(string nuevoId)
+    {
+        SelectedMatchId = nuevoId;
+
+        var partidoSeleccionado = PartidosPendientes.FirstOrDefault(p => p.ObjectId == nuevoId);
+        if (partidoSeleccionado != null)
+        {
+            Console.WriteLine($"Partido seleccionado: {partidoSeleccionado.Rival}");
+            SelectedMatch = partidoSeleccionado;
+            Evaluation.MatchObjectId = SelectedMatchId;
+            Evaluation.PlayerObjectId = PlayerId;
+            // Aquí puedes cargar datos del partido, jugadores, etc.
+        }
+        return Task.CompletedTask;
+
+    }
+    
+
 }

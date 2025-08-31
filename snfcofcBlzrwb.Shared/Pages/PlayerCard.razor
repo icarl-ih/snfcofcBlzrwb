@@ -40,6 +40,7 @@
 
                     <div class="text-end mt-3">
                         <button class="btn btn-primary" @onclick="EditarPlayer">Editar Player</button>
+                        <button class="btn btn-primary" @onclick="EvaluarMatchs">📊 Evaluar Partidos</button>
                         <button class="btn btn-danger" @onclick="EliminarPlayer" disabled="@isDeleting">
                             @if (isDeleting)
                             {
@@ -129,6 +130,14 @@
         if (!string.IsNullOrEmpty(Player?.ObjectId))
         {
             NavigationManager.NavigateTo($"/playercrud/{Player.ObjectId}");
+        }
+    }
+
+    void EvaluarMatchs()
+    {
+        if(!string.IsNullOrEmpty(Player?.ObjectId))
+        {
+            NavigationManager.NavigateTo($"evaluate/{Player.ObjectId}");
         }
     }
 

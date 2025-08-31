@@ -35,6 +35,7 @@ namespace snfcofcBlzrwb
             builder.Services.AddScoped<IPlayerService, PlayerRemoteService>();
             builder.Services.AddScoped<IMatchService, MatchRemoteService>();
             builder.Services.AddScoped<IEvaluationService, EvaluationRemoteService>();
+            builder.Services.AddScoped<ITeamService, TeamsRemoteService>();
             //builder.Services.AddScoped<IPlayerService, PlayerLocalService>();
             // Servicios locales
             //builder.Services.AddSingleton<IPlayerService, PlayerLocalService>();

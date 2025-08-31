@@ -4,10 +4,12 @@
 @using SixLabors.ImageSharp.Processing;
 @inject IPlayerService PlayerService
 @inject HttpClient Http
-@inject NavigationManager Navigation
+@inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
-
+<BackToHomeButton>
+    🏠 Ir al inicio
+</BackToHomeButton>
 <h3>Editar Player</h3>
 
 @if (player == null)
@@ -134,7 +136,7 @@ else
     private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
         var file = e.File;
-        string namefoto = $"{player.Nombre}_{Guid.NewGuid()}";
+        string namefoto = $"PlayerUpdt_{Guid.NewGuid()}";
 
         if (file != null)
         {

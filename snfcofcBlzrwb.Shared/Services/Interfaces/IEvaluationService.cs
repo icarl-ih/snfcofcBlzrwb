@@ -15,6 +15,7 @@ namespace snfcofcBlzrwb.Shared.Services.Interfaces
         Task SaveAsync(PlayerEvaluation evaluation);
         Task<List<PlayerEvaluation>> GetUnsyncedAsync();
         Task DeleteAsync(string objectId);
+        Task CreateEvaluationAsync(PlayerEvaluation evaluation);
     }
 
 }

@@ -1,0 +1,92 @@
+﻿@page "/match/play/{id}"
+@inject NavigationManager NavigationManager
+@inject IMatchService MatchService
+@inject ITeamService TeamService
+
+<h2 class="form-title text-center mb-4">🎮 Jugar Partido</h2>
+
+@if (match != null && selectedTeam != null)
+{
+    <div class="card shadow-lg match-play-card">
+        <div class="card-header bg-dark text-white text-center">
+            <h4 class="mb-0">@selectedTeam.NombreEquipo</h4>
+        </div>
+
+        <div class="card-body text-center">
+            @if (!string.IsNullOrEmpty(selectedTeam.FotoEscudo?.Url))
+            {
+                <img src="@selectedTeam.FotoEscudo.Url" alt="Escudo" class="img-fluid rounded-circle escudo-img mb-3" />
+            }
+
+            <EditForm Model="@match" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="row mb-3">
+                    <div class="col">
+                        <label class="form-label">⚽ Goles a Favor</label>
+                        <InputNumber @bind-Value="match.FaGoles" class="form-control text-center" />
+                    </div>
+                    <div class="col">
+                        <label class="form-label">🥅 Goles en Contra</label>
+                        <InputNumber @bind-Value="match.CoGoles" class="form-control text-center" />
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="form-label">📊 Resultado</label>
+                    <InputSelect @bind-Value="match.EstatusMatchId" class="form-control">
+                        <option value="3">Ganado</option>
+                        <option value="2">Empate</option>
+                        <option value="1">Perdido</option>
+                    </InputSelect>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">
+                    <i class="fas fa-check-circle me-2"></i> Guardar Resultado
+                </button>
+            </EditForm>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning text-center">
+        Cargando datos del partido...
+    </div>
+}
+
+                    <style>
+    .match-play-card {
+        max-width: 500px;
+        margin: 0 auto;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .escudo-img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border: 3px solid #ddd;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+</style>
+@code{
+    [Parameter] public string id { get; set; }
+
+    private MatchModel match;
+    private TeamModel selectedTeam;
+
+    protected override async Task OnInitializedAsync()
+    {
+        match = await MatchService.GetByIdAsync(id);
+        selectedTeam = await TeamService.GetByIdAsync(match.RivalObjectId);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await MatchService.SaveAsync(match);
+        NavigationManager.NavigateTo("/matches");
+    }
+}

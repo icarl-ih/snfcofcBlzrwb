@@ -1,0 +1,15 @@
+﻿@inject NavigationManager NavigationManager
+
+<button class="@CssClass" @onclick="NavigateHome">
+    @ChildContent
+</button>
+
+@code {
+    [Parameter] public string CssClass { get; set; } = "btn btn-lg btn-success action-button";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    void NavigateHome()
+    {
+        NavigationManager.NavigateTo("/", replace: true);
+    }
+}

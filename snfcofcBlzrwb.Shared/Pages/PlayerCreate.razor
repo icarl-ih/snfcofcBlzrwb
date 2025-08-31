@@ -1,9 +1,12 @@
-﻿
-@page "/playercrud/new"
+﻿@page "/playercrud/new"
 @using System.Net.Http.Headers
 @inject IPlayerService PlayerService
 @inject HttpClient Http
-@inject NavigationManager Navigation
+@inject NavigationManager NavigationManager
+<BacktoHomeButton>
+    🏠 Ir al inicio
+</BacktoHomeButton>
+
 <h2 class="form-title">📋 Registro de Jugador</h2>
 
 <div class="card player-form-card">
@@ -156,7 +159,7 @@
     private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
         var file = e.File;
-        string namefoto = $"{player.Nombre}.jpj";
+        string namefoto = $"NewPlayer_{Guid.NewGuid().ToString()}";
 
         if (file != null)
         {

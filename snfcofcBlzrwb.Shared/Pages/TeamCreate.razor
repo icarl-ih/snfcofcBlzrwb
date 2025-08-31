@@ -1,0 +1,154 @@
+﻿@page "/team/new"
+@using snfcofcBlzrwb.Shared.Models
+@inject ITeamService TeamService
+@inject NavigationManager Navigation
+
+<h2 class="form-title">⚽ Crear Nuevo Equipo</h2>
+
+<div class="card team-form-card">
+    <div class="card-body">
+        <EditForm Model="@team" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label class="form-label">Nombre del Equipo:</label>
+                <InputText @bind-Value="team.NombreEquipo" class="form-control input-lg" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Foto del Escudo:</label>
+                <InputFile OnChange="HandleFileSelected" />
+                @if (!string.IsNullOrEmpty(previewUrl))
+                {
+                    <img src="@previewUrl" class="img-preview" />
+                }
+            </div>
+
+            <div class="form-check mb-3">
+                <InputCheckbox @bind-Value="team.ClaveSub" class="form-check-input" id="subCheck" />
+                <label class="form-check-label" for="subCheck">Es Sub 19</label>
+            </div>
+
+            <div class="form-check mb-4">
+                <InputCheckbox @bind-Value="team.ClavePlus" class="form-check-input" id="plusCheck" />
+                <label class="form-check-label" for="plusCheck">Es Categoría Plus</label>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Competencia:</label>
+                <InputText @bind-Value="team.Competencia" class="form-control input-lg" />
+            </div>
+
+            <button type="submit" class="btn btn-primary submit-button">
+                <i class="fas fa-save me-2"></i> Guardar Equipo
+            </button>
+        </EditForm>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-info mt-4 text-center">@message</div>
+        }
+    </div>
+</div>
+
+<BacktoHomeButton>
+    🏠 Ir al inicio
+</BacktoHomeButton>
+
+<style>
+    .form-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 30px;
+        color: #2c3e50;
+    }
+
+    .team-form-card {
+        border-radius: 16px;
+        background-color: #ffffff;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        padding: 30px;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+        color: #34495e;
+    }
+
+    .input-lg {
+        padding: 12px 16px;
+        font-size: 1.1rem;
+        border-radius: 8px;
+    }
+
+    .img-preview {
+        max-width: 180px;
+        max-height: 180px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        margin-top: 12px;
+    }
+
+    .submit-button {
+        width: 100%;
+        padding: 14px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .submit-button:hover {
+        background-color: #0056b3;
+        box-shadow: 0 0 12px rgba(0,0,0,0.15);
+    }
+</style>
+
+@code {
+    private TeamModel team = new();
+    private string previewUrl;
+    private string message;
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            await TeamService.CreateTeamAsync(team);
+            message = "Equipo creado correctamente.";
+        }
+        catch (Exception ex)
+        {
+            message = $"Error: {ex.Message}";
+        }
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        string namefoto = $"NewTeam_{Guid.NewGuid().ToString()}";
+        var buffer = new byte[file.Size];
+        await file.OpenReadStream(maxAllowedSize:100*1024*1024).ReadAsync(buffer);
+        var info = await TeamService.SubirFotoTeamAsync(buffer, namefoto);
+        if (info.url != null)
+        {
+            team.FotoEscudo = new ParseFile
+            {
+                Name = info.name,
+                Type = "File"
+
+            };
+            StateHasChanged();
+        }
+    }
+}

@@ -47,8 +47,8 @@
     <!-- App Icon -->
     <MauiIcon Include="Resources\AppIcon\icon.png" ForegroundScale="0.3" Color="White" />
     <MauiIcon Include="Resources\AppIcon\icon32.png" Color="#000000" />
-    <MauiIcon Include="Resources\AppIcon\icon50.png" ForegroundScale="0.3" Color="White"/>
-    <MauiIcon Include="Resources\AppIcon\icon512.png" ForegroundScale="0.2" Color="White" />
+    <MauiIcon Include="Resources\AppIcon\icon50.png" ForegroundScale="0.5" Color="White" />
+    <MauiIcon Include="Resources\AppIcon\icon512.png" Color="White" />
     <MauiIcon Include="Resources\AppIcon\icon64.png" ForegroundScale="0.5" Color="White" />
 
     <!-- Splash Screen -->
@@ -74,13 +74,7 @@
     <None Remove="Services\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="Resources\AppIcon\icon.png" />
-    <None Remove="Resources\AppIcon\icon32.png" />
-    <None Remove="Resources\AppIcon\icon50.png" />
-    <None Remove="Resources\AppIcon\icon512.png" />
-    <None Remove="Resources\AppIcon\icon64.png" />
-  </ItemGroup>
+	
 
   <ItemGroup>
     <MauiSplashScreen Include="Resources\Splash\solutions.png" />
@@ -96,7 +90,7 @@
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Maui.Essentials" Version="9.0.14" />
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="9.0.82" />
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
     <PackageReference Include="Syncfusion.Blazor" Version="29.2.11" />
   </ItemGroup>

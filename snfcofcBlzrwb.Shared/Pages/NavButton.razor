@@ -1,0 +1,27 @@
+﻿@inject NavigationManager NavigationManager
+
+<button class="@ButtonClass" @onclick="OnClick">
+    
+    @Label
+</button>
+
+@code {
+    [Parameter] public string Label { get; set; }
+    [Parameter] public string TargetUrl { get; set; }
+    [Parameter] public string ButtonClass { get; set; } = "btn btn-success btn-lg";
+    [Parameter] public bool ConfirmBeforeNavigate { get; set; } = false;
+    [Parameter] public string ConfirmMessage { get; set; } = "¿Estás seguro de continuar?";
+
+    private async Task OnClick()
+    {
+        if (ConfirmBeforeNavigate)
+        {
+            var confirmed = await JS.InvokeAsync<bool>("confirm", ConfirmMessage);
+            if (!confirmed) return;
+        }
+
+        NavigationManager.NavigateTo(TargetUrl);
+    }
+
+    [Inject] private IJSRuntime JS { get; set; }
+}

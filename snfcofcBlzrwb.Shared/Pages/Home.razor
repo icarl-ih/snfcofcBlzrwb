@@ -4,6 +4,18 @@
 @using Syncfusion.Blazor.Buttons
 <h3 class="section-title">📋 Jugadores Registrados</h3>
 
+<button class="btn btn-lg btn-primary action-button" @onclick="Refesh" disabled="@isRefreshing">
+    @if (isRefreshing)
+    {
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true">Cargando...</span>
+
+    }
+    else
+    {
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true">🔄 Actualizar</span>
+
+    }
+</button>
 @if (isRefreshing)
 {
     <p class="text-muted"></p>
@@ -21,12 +33,12 @@ else
 
             }
         </div>
-
-        <div class="d-flex justify-content-center mt-4">
-            <button class="btn btn-lg btn-success action-button" @onclick="NuevoPlayer">
-                ➕ Nuevo Jugador
-            </button>
-        </div>
+        <NavButton Label="➕ Nuevo Jugador"
+                   TargetUrl="/playercrud/new"
+                   ButtonClass="btn btn-lg btn-success action-button"
+                   ConfirmBeforeNavigate="true"
+                   ConfirmMessage="¿Deseas registrar un nuevo jugador?" />
+        
     }
     else if (showAlert)
     {
@@ -39,29 +51,22 @@ else
 
 }
 <footer class="mt-5 text-center">
-    <button class="btn btn-lg btn-primary action-button" @onclick="Refesh" disabled="@isRefreshing">
-        @if (isRefreshing)
-        {
-            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true">Cargando...</span>
-
-        }
-        else
-        {
-            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true">🔄 Actualizar</span>
-
-        }
-    </button>
+    
     @* <SfButton CssClass="e-primary" IconCss="e-icons e-add" @onclick="IrANuevoJugador">
         ➕ Nuevo Jugador
     </SfButton> *@
+    <NavButton Label="⚽ Partidos"
+               TargetUrl="/match/view"
+               ButtonClass="btn btn-lg btn-success action-button"
+               ConfirmBeforeNavigate="true"
+               ConfirmMessage="¿Deseas salir de esta página?" />
 
-    <button class="btn btn-lg btn-primary action-button" @onclick="IrANuevoPartido">
-        ⚽ Partidos
-    </button>
+    @* <NavButton Label=" 📊 Evaluar Partidos"
+               TargetUrl= "/evaluate"
+               ButtonClass="btn btn-lg btn-success action-button"
+               ConfirmBeforeNavigate="true"
+               ConfirmMessage="¿Deseas registrar un nuevo jugador?" /> *@
 
-    <button class="btn btn-lg btn-primary action-button" @onclick="IrAEvaluaciones">
-        📊 Evaluar Partidos
-    </button>
 
 </footer>
 

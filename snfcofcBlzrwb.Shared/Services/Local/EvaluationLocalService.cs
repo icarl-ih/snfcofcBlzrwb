@@ -45,6 +45,7 @@ namespace snfcofcBlzrwb.Shared.Services.Local
             var all = await GetAllAsync();
             return all.Where(e => !e.IsSynced).ToList();
         }
+        public async Task CreateEvaluationAsync(PlayerEvaluation evaluation) { }
     }
 
 }

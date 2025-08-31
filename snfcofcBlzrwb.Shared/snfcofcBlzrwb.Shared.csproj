@@ -18,8 +18,4 @@
     <PackageReference Include="Xamarin.Essentials" Version="1.8.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Pages\Match\" />
-  </ItemGroup>
-
 </Project>
