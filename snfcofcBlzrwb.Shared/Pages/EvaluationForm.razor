@@ -39,15 +39,15 @@ else
             <CardHeader>
                 <div class="d-flex align-items-center">
                     <img src="@(Player?.FotoPlayer?.Url ?? "img/default.png")"
-                         class="rounded-circle me-3"
-                         style="width: 100px; height: 100px;" />
+                    class="rounded-circle me-3"
+                    style="width: 100px; height: 100px;" />
                     <div>
                         <h5>@Player.Nombre</h5>
                         <p class="text-muted">
                             Categoría: @(
-                                Player.ClavePlus
-                                    ? (Player.ClaveSub ? "Ambas Categorías" : "Plus")
-                                    : (Player.ClaveSub ? "Sub 19" : "Sin Categoría")
+                         Player.ClavePlus
+                             ? (Player.ClaveSub ? "Ambas Categorías" : "Plus")
+                             : (Player.ClaveSub ? "Sub 19" : "Sin Categoría")
                             )
                         </p>
                     </div>
@@ -85,16 +85,18 @@ else
                 <label class="form-label"><strong>Selecciona partido:</strong></label>
 
                 <InputSelect Value="@SelectedMatchId"
-                             ValueChanged="@ValueChangedCallback"
-                             ValueExpression="() => SelectedMatchId"
-                             class="form-select">
+                ValueChanged="@ValueChangedCallback"
+                ValueExpression="() => SelectedMatchId"
+                class="form-select">
                     <option value="">-- Selecciona --</option>
                     @foreach (var partido in PartidosPendientes)
                     {
                         <option value="@partido.ObjectId">🆚 @partido.Rival</option>
                     }
                 </InputSelect>
-        @* @if (PartidosPendientes is not null && PartidosPendientes.Any())
+
+
+                @* @if (PartidosPendientes is not null && PartidosPendientes.Any())
         {
             @foreach (var partido in PartidosPendientes)
             {
@@ -115,10 +117,10 @@ else
                 {
 
                     <SfCheckBox TChecked="bool"
-                                   Checked="@Evaluation.FuePuntual"
-                                   CheckedChanged="@((bool value) => Evaluation.FuePuntual = value)"
-                                   ValueExpression="() => Evaluation.FuePuntual"
-                                   Enabled="@Evaluation.Asistio">
+                    Checked="@Evaluation.FuePuntual"
+                    CheckedChanged="@((bool value) => Evaluation.FuePuntual = value)"
+                    ValueExpression="() => Evaluation.FuePuntual"
+                    Enabled="@Evaluation.Asistio">
                         Fue puntual (50pts)
                     </SfCheckBox>
 
@@ -142,9 +144,9 @@ else
                     <div class="slider-container">
                         <label for="fieldSkillSlider"><strong>Habilidad en el campo (1–10):</strong> @Evaluation.FieldSkillScore</label>
                         <input type="range" id="fieldSkillSlider" min="1" max="10" step="1"
-                               @bind="Evaluation.FieldSkillScore" class="slider" />
+                        @bind="Evaluation.FieldSkillScore" class="slider" />
                     </div>
-                    
+
                 </CardContent>
             </SfCard>
 
@@ -153,23 +155,23 @@ else
                 <CardHeader><CardTitle>Disciplina (30%)</CardTitle></CardHeader>
                 <CardContent>
                     <SfCheckBox TChecked="bool"
-                                   Checked="@Evaluation.RespetaCompaneros"
-                                   CheckedChanged="@((bool value) => Evaluation.RespetaCompaneros = value)"
-                                   ValueExpression="() => Evaluation.RespetaCompaneros">
+                    Checked="@Evaluation.RespetaCompaneros"
+                    CheckedChanged="@((bool value) => Evaluation.RespetaCompaneros = value)"
+                    ValueExpression="() => Evaluation.RespetaCompaneros">
                         Respeta a sus compañeros (20pts)
                     </SfCheckBox>
 
                     <SfCheckBox TChecked="bool"
-                                   Checked="@Evaluation.RespetaTecnico"
-                                   CheckedChanged="@((bool value) => Evaluation.RespetaTecnico = value)"
-                                   ValueExpression="() => Evaluation.RespetaTecnico">
+                    Checked="@Evaluation.RespetaTecnico"
+                    CheckedChanged="@((bool value) => Evaluation.RespetaTecnico = value)"
+                    ValueExpression="() => Evaluation.RespetaTecnico">
                         Respeta al cuerpo técnico (20pts)
                     </SfCheckBox>
 
                     <SfCheckBox TChecked="bool"
-                                   Checked="@Evaluation.RespetaArbitro"
-                                   CheckedChanged="@((bool value) => Evaluation.RespetaArbitro = value)"
-                                   ValueExpression="() => Evaluation.RespetaArbitro">
+                    Checked="@Evaluation.RespetaArbitro"
+                    CheckedChanged="@((bool value) => Evaluation.RespetaArbitro = value)"
+                    ValueExpression="() => Evaluation.RespetaArbitro">
                         Respeta al cuerpo arbitral (20pts)
                     </SfCheckBox>
                     <div class="mb-2">
@@ -204,130 +206,130 @@ else
 
 <style>
     h3 {
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 1rem;
-        border-bottom: 2px solid #3498db;
-        padding-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.5rem;
     }
 
     h5 {
-        font-weight: 600;
-        color: #34495e;
+    font-weight: 600;
+    color: #34495e;
     }
 
     h6 {
-        font-weight: 500;
-        color: #2980b9;
-        margin-bottom: 0.75rem;
+    font-weight: 500;
+    color: #2980b9;
+    margin-bottom: 0.75rem;
     }
 
     .sf-card-custom {
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e0e0e0;
-        padding: 1rem;
-        background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #e0e0e0;
+    padding: 1rem;
+    background-color: #fff;
     }
 
     input[type="checkbox"] {
-        accent-color: #3498db;
+    accent-color: #3498db;
     }
 
     label {
-        font-weight: 500;
-        margin-bottom: 0.25rem;
-        color: #2c3e50;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: #2c3e50;
     }
 
     .form-control {
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    padding: 0.5rem 0.75rem;
     }
 
     .list-group-item {
-        border: none;
-        padding: 0.75rem 1rem;
-        background-color: #f9f9f9;
-        margin-bottom: 0.5rem;
-        border-radius: 8px;
+    border: none;
+    padding: 0.75rem 1rem;
+    background-color: #f9f9f9;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
     }
 
     .badge.bg-primary {
-        background-color: #3498db;
-        font-size: 0.85rem;
-        padding: 0.4em 0.6em;
+    background-color: #3498db;
+    font-size: 0.85rem;
+    padding: 0.4em 0.6em;
     }
 
     .e-slider-container {
-        margin-top: 1rem;
+    margin-top: 1rem;
     }
 
     .e-progressbar {
-        height: 20px;
-        border-radius: 10px;
-        background-color: #ecf0f1;
+    height: 20px;
+    border-radius: 10px;
+    background-color: #ecf0f1;
     }
 
-        .e-progressbar .e-progress {
-            background-color: #27ae60;
-        }
+    .e-progressbar .e-progress {
+    background-color: #27ae60;
+    }
 
     .e-primary {
-        background-color: #2980b9;
-        border-color: #2980b9;
-        font-weight: 600;
-        padding: 0.6rem 1.2rem;
-        border-radius: 8px;
+    background-color: #2980b9;
+    border-color: #2980b9;
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
     }
 
     .slider-container {
-        margin-top: 1rem;
+    margin-top: 1rem;
     }
 
     input[type="range"].slider {
-        -webkit-appearance: none;
-        width: 100%;
-        height: 8px;
-        border-radius: 5px;
-        background: #ddd;
-        outline: none;
-        padding: 0;
-        margin-top: 0.5rem;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 5px;
+    background: #ddd;
+    outline: none;
+    padding: 0;
+    margin-top: 0.5rem;
     }
 
-        input[type="range"].slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 24px;
-            height: 24px;
-            background: #2980b9;
-            cursor: pointer;
-            border-radius: 50%;
-            border: 2px solid #1c5980;
-            margin-top: -8px; /* Centrar el thumb */
-            transition: background 0.3s ease;
-        }
+    input[type="range"].slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: #2980b9;
+    cursor: pointer;
+    border-radius: 50%;
+    border: 2px solid #1c5980;
+    margin-top: -8px; /* Centrar el thumb */
+    transition: background 0.3s ease;
+    }
 
-            input[type="range"].slider::-webkit-slider-thumb:hover {
-                background: #1c5980;
-            }
+    input[type="range"].slider::-webkit-slider-thumb:hover {
+    background: #1c5980;
+    }
 
-        /* Firefox */
-        input[type="range"].slider::-moz-range-thumb {
-            width: 24px;
-            height: 24px;
-            background: #2980b9;
-            cursor: pointer;
-            border-radius: 50%;
-            border: 2px solid #1c5980;
-            transition: background 0.3s ease;
-        }
+    /* Firefox */
+    input[type="range"].slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    background: #2980b9;
+    cursor: pointer;
+    border-radius: 50%;
+    border: 2px solid #1c5980;
+    transition: background 0.3s ease;
+    }
 
-            input[type="range"].slider::-moz-range-thumb:hover {
-                background: #1c5980;
-            }
+    input[type="range"].slider::-moz-range-thumb:hover {
+    background: #1c5980;
+    }
 </style>
 
 @code {
@@ -340,6 +342,7 @@ else
     PlayerEvaluation Evaluation = new PlayerEvaluation();
     List<PlayerEvaluation> Evaluaciones = new List<PlayerEvaluation>();
     private string SelectedMatchId;
+    private int MatchIdSts;
     private bool MostrarCamposEvaluacion => Evaluation.Asistio;
     private float PuntajeCalculado => CalcularPuntaje();
     private string message;
@@ -354,6 +357,12 @@ else
         EnJuego = 2,
         Finalizado = 3,
         Suspendido = 4
+    }
+    public enum MatchId
+    {
+        Perdido = 0,
+        Empatado = 1,
+        Ganado = 3
     }
 
     protected override async Task OnInitializedAsync()
@@ -378,6 +387,7 @@ else
                 .ToHashSet();
 
             PartidosPendientes = Matches
+                .Where(m => m.EstatusMatchId != 0)
                 .Where(m => m.ClaveSub == Player.ClaveSub || m.ClavePlus == Player.ClavePlus)
                 .Where(m => !evaluadosIds.Contains(m.ObjectId))
                 .ToList();
@@ -398,7 +408,7 @@ else
     private void OnAsistioChanged(bool value)
     {
         Evaluation.Asistio = value;
-        
+
     }
     private float CalcularPuntaje()
     {
@@ -440,7 +450,19 @@ else
         Evaluation.PlayerObjectId = PlayerId;
         Evaluation.PlayerObjectId = Player.ObjectId;
         Evaluation.MatchObjectId = SelectedMatch.ObjectId;
+
         var player = await PlayerService.GetByIdAsync(PlayerId);
+        if (Evaluation.Asistio)
+        {
+            player.PartidosJugados += 1;
+            switch (SelectedMatch.EstatusMatchId)
+            {
+                case 3: player.PartidosGanados += 1; break;
+                case 2: player.PartidosEmpate +=1; break;
+                case 1: player.PartidosPerdidos += 1; break;
+
+            }
+        }
         player.Ranking = (player.Ranking + PuntajeCalculado) / 2f;
 
         await PlayerService.SaveAsync(player);
@@ -459,6 +481,7 @@ else
             SelectedMatch = partidoSeleccionado;
             Evaluation.MatchObjectId = SelectedMatchId;
             Evaluation.PlayerObjectId = PlayerId;
+            Evaluation.EstatusPartido = SelectedMatch.EstatusMatchId;
             // Aquí puedes cargar datos del partido, jugadores, etc.
         }
         return Task.CompletedTask;

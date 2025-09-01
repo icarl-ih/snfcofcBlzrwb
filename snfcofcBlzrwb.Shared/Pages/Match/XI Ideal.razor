@@ -1,0 +1,258 @@
+﻿@page "/sugested xi"
+
+@inject IPlayerService PlayerService
+
+<h3>XI_Ideal</h3>
+
+<div>
+    <SfDropDownList TItem="string" TValue="string" Value="@FormacionSeleccionada" DataSource="@Formaciones" Placeholder="Selecciona formación" Change="OnFormacionChanged" />
+    <SfButton CssClass="e-outline e-primary mt-3" Content="Actualizar XI" OnClick="SugerirXI" />
+
+</div>
+
+<div class="lineup-container">
+    <div class="lineup-left">
+        <h4>STARTING XI</h4>
+        <SfListView DataSource="@PlayerList" TValue="Jugador" ShowHeader="false">
+            <ListViewFieldSettings Text="NombreConDorsal" />
+        </SfListView>
+
+        <h4 class="mt-4">SUBSTITUTIONS</h4>
+        <SfListView DataSource="@Suplentes" TValue="Jugador" ShowHeader="false">
+            <ListViewFieldSettings Text="NombreConDorsal" />
+        </SfListView>
+    </div>
+
+    <div class="lineup-center">
+        <div class="field-background">
+            @foreach (var jugador in FieldPlayerList)
+            {
+                <div class="player-card" style="@GetPosicionStyle(jugador.Posicion)">
+                    <img src="@jugador.FotoPlayer?.Url" class="player-photo" />
+                    <div class="player-label">@jugador.Nombre (@jugador.Dorsal)</div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="lineup-right">
+        <h4>TEAM NAME</h4>
+        <p>SAN FRANCISCO FC</p>
+
+
+    </div>
+</div>
+<style>
+    .lineup-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    }
+
+    .lineup-left, .lineup-right {
+    width: 200px;
+    }
+
+    .lineup-center {
+    flex-grow: 1;
+    position: relative;
+    }
+
+    .field-background {
+    background-image: url('Resources/images/campo.png');
+    background-size: cover;
+    height: 600px;
+    position: relative;
+    }
+
+    .player-card {
+    position: absolute;
+    width: 70px;
+    text-align: center;
+    }
+
+    .player-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+    }
+
+    .player-label {
+    font-size: 12px;
+    margin-top: 4px;
+    color: white;
+    text-shadow: 1px 1px 2px black;
+    }
+</style>
+@code {
+    Player player = new Player();
+    MatchModel Match = new MatchModel();
+
+    List<Player> PlayerList = new List<Player>();
+    List<Player> FieldPlayerList = new List<Player>();
+    List<Player> Suplentes = new List<Player>();
+
+    List<string> Formaciones = new()
+    {
+        "1-2-3-1", "1-3-2-1"
+    };
+    string FormacionSeleccionada = "1-2-3-1";
+
+    public class Punto
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+
+        public Punto(int x, int y)
+        {
+            X = x;
+            Y = y;
+        }
+    }
+    Dictionary<string, Dictionary<string, Point>> Posiciones = new()
+    {
+        ["1-2-3-1"]    = new()
+        {
+            ["POR"] = new Point(50, 90), // Portero
+            ["LI"] = new Point(30, 70), ["LD"] = new Point(70, 70), // Defensas Laterales
+            ["DFC"] = new Point(20,70), ["DFC"] = new Point(90,70),
+            ["MI"] = new Point(20, 50), ["MC"] = new Point(50, 50), ["MD"] = new Point(80, 50), ["MCD"] = new Point(50,60), ["MCO"] = new Point(50,35), // Mediocampistas
+            ["DC"] = new Point(50, 20) // Delantero
+
+        },
+        ["1-3-2-1"] = new() 
+        {
+                ["POR"] = new Point(50, 90),
+                ["DFI"] = new Point(20, 70),
+                ["DFC"] = new Point(50, 70),
+                ["DFD"] = new Point(80, 70),
+                ["EI"] = new Point(35, 50),
+                ["MCD"] = new Point(50, 60),
+                ["MCO"] = new Point(50, 35),
+                ["ED"] = new Point(65, 50),
+                ["DC"] = new Point(50, 20)
+        }
+
+    };
+
+
+    string GetPosicionStyle(string posicion)
+    {
+        if (Posiciones.TryGetValue(FormacionSeleccionada, out var mapaFormacion) &&
+        mapaFormacion.TryGetValue(posicion, out var punto))
+        {
+            return $"left:{punto.X}%; top:{punto.Y}%;";
+        }
+
+        // Posición no encontrada
+        return "left:-9999px; top:-9999px;";
+
+    }
+
+    void OnFormacionChanged(Syncfusion.Blazor.DropDowns.ChangeEventArgs<string, string> args)
+    {
+        FormacionSeleccionada = args.Value;
+        // if (FieldPlayerList.Any())
+        // {
+        //     for (int i = 0; i < FieldPlayerList.Count; i++)
+        //         FieldPlayerList[i].Posicion = i.ToString();
+        // }
+        SugerirXI();
+    }
+
+    async Task SugerirXI()
+    {
+        PlayerList = await PlayerService.GetAllAsync();
+        var candidatos = new List<Player>();
+        if (Match.ClavePlus == true)
+        {
+            candidatos = PlayerList
+            .Where(j => j.ClavePlus == Match.ClavePlus)
+            .OrderByDescending(j => j.PartidosJugados)
+            .ThenByDescending(j => j.Ranking)
+            .Take(Posiciones[FormacionSeleccionada].Count)
+            .ToList();
+        }
+        else
+        {
+            candidatos = PlayerList
+            .Where(j => j.ClaveSub == Match.ClaveSub)
+            .OrderByDescending(j => j.PartidosJugados)
+            .ThenByDescending(j => j.Ranking)
+            .Take(Posiciones[FormacionSeleccionada].Count)
+            .ToList();
+        }
+        var posicionesFormacion = Posiciones[FormacionSeleccionada];
+        var porteros = posicionesFormacion.Where(p => p.Key == "POR").ToList();
+        var defensas = posicionesFormacion.Where(p => p.Key.StartsWith("DF") || p.Key == "LI" || p.Key == "LD" || p.Key == "DFC").ToList();
+        var mediocampistas = posicionesFormacion.Where(p => p.Key.StartsWith("M") || p.Key == "EI" || p.Key == "ED" || p.Key == "MC" || p.Key == "MI" || p.Key == "MD").ToList();
+        var delanteros = posicionesFormacion.Where(p => p.Key == "DC" || p.Key == "MP").ToList();
+
+        var XI = new List<Player>();
+        var usados = new HashSet<string>(); // Para evitar duplicados
+
+        // Portero
+        foreach (var pos in porteros)
+        {
+            var jugador = candidatos.FirstOrDefault(j => j.Posicion == "POR" && !usados.Contains(j.ObjectId));
+            if (jugador != null)
+            {
+                jugador.Posicion = pos.Key;
+                XI.Add(jugador);
+                usados.Add(jugador.ObjectId);
+            }
+        }
+
+        // Defensas
+        foreach (var pos in defensas)
+        {
+            var jugador = candidatos.FirstOrDefault(j => j.Posicion.StartsWith("DF") || j.Posicion == "LI" || j.Posicion == "LD");
+            if (jugador != null && !usados.Contains(jugador.ObjectId))
+            {
+                jugador.Posicion = pos.Key;
+                XI.Add(jugador);
+                usados.Add(jugador.ObjectId);
+            }
+        }
+
+        // Mediocampistas
+        foreach (var pos in mediocampistas)
+        {
+            var jugador = candidatos.FirstOrDefault(j => j.Posicion.StartsWith("M") || j.Posicion == "EI" || j.Posicion == "ED");
+            if (jugador != null && !usados.Contains(jugador.ObjectId))
+            {
+                jugador.Posicion = pos.Key;
+                XI.Add(jugador);
+                usados.Add(jugador.ObjectId);
+            }
+        }
+
+        // Delanteros
+        foreach (var pos in delanteros)
+        {
+            var jugador = candidatos.FirstOrDefault(j => j.Posicion == "DC" || j.Posicion == "MP");
+            if (jugador != null && !usados.Contains(jugador.ObjectId))
+            {
+                jugador.Posicion = pos.Key;
+                XI.Add(jugador);
+                usados.Add(jugador.ObjectId);
+            }
+        }
+
+
+       
+
+        FieldPlayerList = XI;
+        // StartingXI = candidatos;
+        Suplentes = PlayerList.Except(XI).Take(5).ToList();
+    }
+
+    protected override void OnInitialized()
+    {
+        
+
+        SugerirXI();
+    }
+}

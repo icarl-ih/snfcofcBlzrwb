@@ -31,7 +31,14 @@ namespace snfcofcBlzrwb.Models
         public float Ranking { get; set; }
         [JsonPropertyName("FotoPlayer")]
         public ParseFile FotoPlayer { get; set; }
-
+        [JsonPropertyName("JugadosMatch")]
+        public int PartidosJugados { get; set; }
+        [JsonPropertyName("JugadosWin")]
+        public int PartidosGanados {  get; set; }
+        [JsonPropertyName("JugadosDraw")]
+        public int PartidosEmpate {  get; set; }
+        [JsonPropertyName("JugadosDefeat")]
+        public int PartidosPerdidos { get; set; }
         [JsonPropertyName("IsSynced")]
         public bool IsSynced { get; set; }
 

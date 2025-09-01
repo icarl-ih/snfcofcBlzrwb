@@ -77,7 +77,7 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
                 { "ClaveSub", player.ClaveSub },
                 { "Dorsal", player.Dorsal },
                 { "Ranking", player.Ranking },
-                { "IsSynced", true }
+                { "IsSynced", true },{"JugadosMatch",player.PartidosJugados},{"JugadosWin", player.PartidosGanados},{"JugadosDraw", player.PartidosEmpate},{"JugadosDefeat",player.PartidosPerdidos}
             };
 
             if (player.FotoPlayer != null)
@@ -123,8 +123,8 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
                 { "Dorsal", player.Dorsal },
                 { "Ranking", player.Ranking },
                 { "IsSynced", true },
-                {"FotoPlayer","" }
-                
+                {"FotoPlayer","" },{"JugadosMatch",player.PartidosJugados},{"JugadosWin", player.PartidosGanados},{"JugadosDraw", player.PartidosEmpate},{"JugadosDefeat",player.PartidosPerdidos}
+
             };
 
             if (player.FotoPlayer != null)

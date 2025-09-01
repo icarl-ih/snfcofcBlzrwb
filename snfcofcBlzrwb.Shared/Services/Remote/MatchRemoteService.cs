@@ -168,11 +168,13 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             );
         }
         public async Task DeleteAsync(string objectId) {
-            _http.DefaultRequestHeaders.Add("X-Parse-Application-Id", _appSettings.ApplicationId);
-            _http.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", _appSettings.RestApiKey);
-            _http.DefaultRequestHeaders.Add("X-Parse-Session-Token", _appSettings.SessionToken);
+            string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
+            client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
+            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sessionToken);
 
-            var response = await _http.DeleteAsync($"https://parseapi.back4app.com/classes/Match/{objectId}");
+            var response = await client.DeleteAsync($"https://parseapi.back4app.com/classes/Match/{objectId}");
             response.EnsureSuccessStatusCode();
         }
 

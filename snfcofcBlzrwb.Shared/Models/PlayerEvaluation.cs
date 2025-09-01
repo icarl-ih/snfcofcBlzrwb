@@ -25,6 +25,8 @@ namespace snfcofcBlzrwb.Models
         // Evaluación técnica
         [JsonPropertyName("FieldSkillScore")]
         public int FieldSkillScore { get; set; } // 1–10
+        [JsonPropertyName("EstatusMatchId")]
+        public int EstatusPartido { get; set; }
         
 
         // Disciplina
