@@ -24,7 +24,7 @@ else if (Player == null)
 {
     <p class="text-danger">No se encontró el jugador.</p>
 }
-else if (Matches == null)
+else if (Matches == null || PartidosPendientes.Count == 0)
 {
     <p class="text-danger">No hay partidos para evaluar</p>    
 }
@@ -114,13 +114,13 @@ else
                 @if (MostrarCamposEvaluacion)
                 {
 
-                    <InputCheckbox TChecked="bool"
+                    <SfCheckBox TChecked="bool"
                                    Checked="@Evaluation.FuePuntual"
                                    CheckedChanged="@((bool value) => Evaluation.FuePuntual = value)"
                                    ValueExpression="() => Evaluation.FuePuntual"
                                    Enabled="@Evaluation.Asistio">
                         Fue puntual (50pts)
-                    </InputCheckbox>
+                    </SfCheckBox>
 
                     @if (Evaluation.FuePuntual)
                     {
@@ -139,10 +139,12 @@ else
             <SfCard CssClass="sf-card-custom mb-4">
                 <CardHeader><CardTitle>Evaluación Técnica</CardTitle></CardHeader>
                 <CardContent>
-                    <label><strong>Habilidad en el campo (1–10)</strong></label>
-                    <SfSlider TValue="int" Min="1" Max="10" Step="1" @bind-Value="Evaluation.FieldSkillScore" ShowButtons="true">
-                        <SliderTooltip IsVisible="true" />
-                    </SfSlider>
+                    <div class="slider-container">
+                        <label for="fieldSkillSlider"><strong>Habilidad en el campo (1–10):</strong> @Evaluation.FieldSkillScore</label>
+                        <input type="range" id="fieldSkillSlider" min="1" max="10" step="1"
+                               @bind="Evaluation.FieldSkillScore" class="slider" />
+                    </div>
+                    
                 </CardContent>
             </SfCard>
 
@@ -150,26 +152,26 @@ else
             <SfCard CssClass="sf-card-custom mb-4">
                 <CardHeader><CardTitle>Disciplina (30%)</CardTitle></CardHeader>
                 <CardContent>
-                    <InputCheckbox TChecked="bool"
+                    <SfCheckBox TChecked="bool"
                                    Checked="@Evaluation.RespetaCompaneros"
                                    CheckedChanged="@((bool value) => Evaluation.RespetaCompaneros = value)"
                                    ValueExpression="() => Evaluation.RespetaCompaneros">
                         Respeta a sus compañeros (20pts)
-                    </InputCheckbox>
+                    </SfCheckBox>
 
-                    <InputCheckbox TChecked="bool"
+                    <SfCheckBox TChecked="bool"
                                    Checked="@Evaluation.RespetaTecnico"
                                    CheckedChanged="@((bool value) => Evaluation.RespetaTecnico = value)"
                                    ValueExpression="() => Evaluation.RespetaTecnico">
                         Respeta al cuerpo técnico (20pts)
-                    </InputCheckbox>
+                    </SfCheckBox>
 
-                    <InputCheckbox TChecked="bool"
+                    <SfCheckBox TChecked="bool"
                                    Checked="@Evaluation.RespetaArbitro"
                                    CheckedChanged="@((bool value) => Evaluation.RespetaArbitro = value)"
                                    ValueExpression="() => Evaluation.RespetaArbitro">
                         Respeta al cuerpo arbitral (20pts)
-                    </InputCheckbox>
+                    </SfCheckBox>
                     <div class="mb-2">
                         <label>Tarjetas recibidas:</label>
                         <InputNumber @bind-Value="Evaluation.Tarjetas" class="form-control" />
@@ -186,13 +188,13 @@ else
         <InputTextArea  @bind-Value="Evaluation.Comentarios" Placeholder="Comentarios del entrenador" Rows="4" />
 
         <!-- Puntaje calculado -->
-        <SfCard CssClass="sf-card-custom mb-4">
+        @* <SfCard CssClass="sf-card-custom mb-4">
             <CardHeader><CardTitle>Puntaje Calculado</CardTitle></CardHeader>
             <CardContent>
                 <SfProgressBar Value="@PuntajeCalculado" Minimum="0" Maximum="5"
                                Text="@(PuntajeCalculado.ToString("0.00") + " / 5")" />
             </CardContent>
-        </SfCard>
+        </SfCard> *@
 
         <p class="text-danger">@message</p>
 
@@ -279,6 +281,53 @@ else
         padding: 0.6rem 1.2rem;
         border-radius: 8px;
     }
+
+    .slider-container {
+        margin-top: 1rem;
+    }
+
+    input[type="range"].slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 8px;
+        border-radius: 5px;
+        background: #ddd;
+        outline: none;
+        padding: 0;
+        margin-top: 0.5rem;
+    }
+
+        input[type="range"].slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #2980b9;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #1c5980;
+            margin-top: -8px; /* Centrar el thumb */
+            transition: background 0.3s ease;
+        }
+
+            input[type="range"].slider::-webkit-slider-thumb:hover {
+                background: #1c5980;
+            }
+
+        /* Firefox */
+        input[type="range"].slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: #2980b9;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #1c5980;
+            transition: background 0.3s ease;
+        }
+
+            input[type="range"].slider::-moz-range-thumb:hover {
+                background: #1c5980;
+            }
 </style>
 
 @code {

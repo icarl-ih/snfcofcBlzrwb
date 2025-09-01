@@ -174,7 +174,7 @@
     }
     async Task EliminarMatch()
     {
-        if (string.IsNullOrEmpty(Match?.ObjectId))
+        if (!string.IsNullOrEmpty(Match?.ObjectId))
         {
             var confirm = await Confirmar($"¿Deseas eliminar la Jornada {Match.JNo} vs {Match.Rival}?");
             if (confirm)
