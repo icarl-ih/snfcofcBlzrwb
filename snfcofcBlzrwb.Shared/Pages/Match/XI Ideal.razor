@@ -1,47 +1,69 @@
-﻿@page "/sugested xi"
+﻿@page "/sugested_xi/{ObjectId}"
+
 
 @inject IPlayerService PlayerService
+@inject IMatchService MatchService
 
-<h3>XI_Ideal</h3>
+<h3>XI Ideal</h3>
 
 <div>
-    <SfDropDownList TItem="string" TValue="string" Value="@FormacionSeleccionada" DataSource="@Formaciones" Placeholder="Selecciona formación" Change="OnFormacionChanged" />
+    <div class="col-lg-12 control-section">
+    
+    
+        <div class="control-wrapper">
+            <div class="inline">
+                <span id="contentText" class="dropdown-size">
+                    Formación seleccionada:
+                    <SfDropDownList TValue="string" TItem="string" CssClass="inlinecss" Placeholder="Selecciona una formación"
+                                    DataSource="@Formaciones" @bind-Value="FormacionSeleccionada"
+                                    Width="150px" PopupHeight="200px" PopupWidth="200px">
+                    </SfDropDownList>
+                </span>
+            </div>
+        </div>
+    </div>
+
+
     <SfButton CssClass="e-outline e-primary mt-3" Content="Actualizar XI" OnClick="SugerirXI" />
 
 </div>
 
 <div class="lineup-container">
-    <div class="lineup-left">
-        <h4>STARTING XI</h4>
-        <SfListView DataSource="@PlayerList" TValue="Jugador" ShowHeader="false">
-            <ListViewFieldSettings Text="NombreConDorsal" />
-        </SfListView>
+    
+    <div class="lineup-center">
+        <h4>SAN FRANCISCO FC</h4>
+        <p></p>
 
-        <h4 class="mt-4">SUBSTITUTIONS</h4>
-        <SfListView DataSource="@Suplentes" TValue="Jugador" ShowHeader="false">
-            <ListViewFieldSettings Text="NombreConDorsal" />
-        </SfListView>
+
     </div>
+    
+        <div class="lineup-center">
+            <div class="field-background">
+                @foreach (var jugador in FieldPlayerList)
+                {
+                    <div class="player-card" style="@GetPosicionStyle(jugador.Posicion)">
+                        <img src="@jugador.FotoPlayer?.Url" class="player-photo" />
+                        <div class="player-label">@jugador.Nombre (@jugador.Dorsal)</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+    
+</div>
+<h1>    </h1>
+<div class="lineup-container">
 
     <div class="lineup-center">
-        <div class="field-background">
-            @foreach (var jugador in FieldPlayerList)
-            {
-                <div class="player-card" style="@GetPosicionStyle(jugador.Posicion)">
-                    <img src="@jugador.FotoPlayer?.Url" class="player-photo" />
-                    <div class="player-label">@jugador.Nombre (@jugador.Dorsal)</div>
-                </div>
-            }
+        <div id="group-list">
+            <SfListView CssClass="listview-group" DataSource="@GroupedListData" TValue="PlayerGroupItem">
+                <ListViewFieldSettings TValue="PlayerGroupItem" Id="Id" Text="Text" GroupBy="Group"></ListViewFieldSettings>
+            </SfListView>
         </div>
     </div>
-
-    <div class="lineup-right">
-        <h4>TEAM NAME</h4>
-        <p>SAN FRANCISCO FC</p>
-
-
-    </div>
 </div>
+
+
 <style>
     .lineup-container {
     display: flex;
@@ -59,8 +81,8 @@
     }
 
     .field-background {
-    background-image: url('Resources/images/campo.png');
-    background-size: cover;
+        background-image: url('/Resources/images/campo.png');
+        background-size: cover;
     height: 600px;
     position: relative;
     }
@@ -87,6 +109,7 @@
     }
 </style>
 @code {
+    [Parameter] public string ObjectId { get; set; }
     Player player = new Player();
     MatchModel Match = new MatchModel();
 
@@ -98,7 +121,7 @@
     {
         "1-2-3-1", "1-3-2-1"
     };
-    string FormacionSeleccionada = "1-2-3-1";
+    public string FormacionSeleccionada = "1-2-3-1";
 
     public class Punto
     {
@@ -115,19 +138,19 @@
     {
         ["1-2-3-1"]    = new()
         {
-            ["POR"] = new Point(50, 90), // Portero
-            ["LI"] = new Point(30, 70), ["LD"] = new Point(70, 70), // Defensas Laterales
-            ["DFC"] = new Point(20,70), ["DFC"] = new Point(90,70),
-            ["MI"] = new Point(20, 50), ["MC"] = new Point(50, 50), ["MD"] = new Point(80, 50), ["MCD"] = new Point(50,60), ["MCO"] = new Point(50,35), // Mediocampistas
-            ["DC"] = new Point(50, 20) // Delantero
+            ["POR"] = new Point(220, 90), // Portero
+            ["LI"] = new Point(100, 70), ["LD"] = new Point(350, 70), // Defensas Laterales
+            // ["DFC1"] = new Point(20,70), ["DFC2"] = new Point(90,70),
+            ["MI"] = new Point(30, 50), ["MC"] = new Point(220, 50), ["MD"] = new Point(200, 50),// Mediocampistas
+            ["DC"] = new Point(220, 20) // Delantero
 
         },
         ["1-3-2-1"] = new() 
         {
                 ["POR"] = new Point(50, 90),
-                ["DFI"] = new Point(20, 70),
-                ["DFC"] = new Point(50, 70),
-                ["DFD"] = new Point(80, 70),
+                ["DFC1"] = new Point(20, 70),
+                ["DFC2"] = new Point(50, 70),
+                ["DFC3"] = new Point(80, 70),
                 ["EI"] = new Point(35, 50),
                 ["MCD"] = new Point(50, 60),
                 ["MCO"] = new Point(50, 35),
@@ -136,7 +159,13 @@
         }
 
     };
-
+    public class PlayerGroupItem
+    {
+        public string Id { get; set; }       // Puede ser el ObjectId del jugador
+        public string Text { get; set; }     // Texto a mostrar (ejemplo: "Dorsal - Nombre")
+        public string Group { get; set; }    // Grupo: "Titulares" o "Suplentes"
+    }
+    List<PlayerGroupItem> GroupedListData = new List<PlayerGroupItem>();
 
     string GetPosicionStyle(string posicion)
     {
@@ -164,6 +193,8 @@
 
     async Task SugerirXI()
     {
+        Match = await MatchService.GetByIdAsync(ObjectId);
+
         PlayerList = await PlayerService.GetAllAsync();
         var candidatos = new List<Player>();
         if (Match.ClavePlus == true)
@@ -196,7 +227,10 @@
         // Portero
         foreach (var pos in porteros)
         {
-            var jugador = candidatos.FirstOrDefault(j => j.Posicion == "POR" && !usados.Contains(j.ObjectId));
+            var jugador = candidatos
+                .Where(j => !usados.Contains(j.ObjectId))
+                .FirstOrDefault(j => j.Posicion == "POR");
+
             if (jugador != null)
             {
                 jugador.Posicion = pos.Key;
@@ -208,8 +242,11 @@
         // Defensas
         foreach (var pos in defensas)
         {
-            var jugador = candidatos.FirstOrDefault(j => j.Posicion.StartsWith("DF") || j.Posicion == "LI" || j.Posicion == "LD");
-            if (jugador != null && !usados.Contains(jugador.ObjectId))
+            var jugador = candidatos
+                .Where(j => !usados.Contains(j.ObjectId))
+                .FirstOrDefault(j => j.Posicion.StartsWith("DF") || j.Posicion == "LI" || j.Posicion == "LD");
+
+            if (jugador != null)
             {
                 jugador.Posicion = pos.Key;
                 XI.Add(jugador);
@@ -220,8 +257,11 @@
         // Mediocampistas
         foreach (var pos in mediocampistas)
         {
-            var jugador = candidatos.FirstOrDefault(j => j.Posicion.StartsWith("M") || j.Posicion == "EI" || j.Posicion == "ED");
-            if (jugador != null && !usados.Contains(jugador.ObjectId))
+            var jugador = candidatos
+                .Where(j => !usados.Contains(j.ObjectId))
+                .FirstOrDefault(j => j.Posicion.StartsWith("M") || j.Posicion == "EI" || j.Posicion == "ED");
+
+            if (jugador != null)
             {
                 jugador.Posicion = pos.Key;
                 XI.Add(jugador);
@@ -232,27 +272,43 @@
         // Delanteros
         foreach (var pos in delanteros)
         {
-            var jugador = candidatos.FirstOrDefault(j => j.Posicion == "DC" || j.Posicion == "MP");
-            if (jugador != null && !usados.Contains(jugador.ObjectId))
+            var jugador = candidatos
+                .Where(j => !usados.Contains(j.ObjectId))
+                .FirstOrDefault(j => j.Posicion == "DC" || j.Posicion == "MP");
+
+            if (jugador != null)
             {
                 jugador.Posicion = pos.Key;
                 XI.Add(jugador);
                 usados.Add(jugador.ObjectId);
             }
         }
-
-
-       
-
+        Suplentes = PlayerList.Except(XI).Take(5).ToList();
+        GroupedListData = new List<PlayerGroupItem>();
+        foreach(var plyr in XI)
+        {
+            var p = new PlayerGroupItem
+            {
+                Id = plyr.ObjectId, Group = "XI", Text = $"{plyr.Dorsal} - { plyr.Nombre}"
+            };
+            GroupedListData.Add(p);
+        }
+        foreach(var plyr in Suplentes)
+        {
+            var p = new PlayerGroupItem
+            {
+                Id = plyr.ObjectId, Group = "Suplente", Text = $"{plyr.Dorsal} - { plyr.Nombre}"
+            };
+            GroupedListData.Add(p);
+        }
+        
         FieldPlayerList = XI;
         // StartingXI = candidatos;
-        Suplentes = PlayerList.Except(XI).Take(5).ToList();
+        
     }
 
     protected override void OnInitialized()
     {
-        
-
         SugerirXI();
     }
 }

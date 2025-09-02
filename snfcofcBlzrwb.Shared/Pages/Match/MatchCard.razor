@@ -156,7 +156,7 @@
     {
         if (!string.IsNullOrEmpty(Match?.ObjectId))
         {
-            NavigationManager.NavigateTo("/sugested xi");
+            NavigationManager.NavigateTo($"/sugested_xi/{Match.ObjectId}");
         }
     }
     private string GetResultadoTexto(int estatus)

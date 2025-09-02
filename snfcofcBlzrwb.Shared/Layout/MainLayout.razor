@@ -1,9 +1,36 @@
 ﻿@inherits LayoutComponentBase
 
-@Body
+<div class="main-layout">
+    @Body
+</div>
 
 <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
+    Ha ocurrido un error inesperado.
+    <a href="." class="reload">Recargar</a>
     <span class="dismiss">🗙</span>
 </div>
+
+<style>
+    .main-layout {
+        padding: 1rem;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    #blazor-error-ui {
+        background-color: #ffe0e0;
+        color: #900;
+        padding: 1rem;
+        border-top: 2px solid #c00;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        font-weight: 600;
+        display: none;
+    }
+
+    
+    }
+        #blazor-error-ui.show {
+            display: block;
+        }
+</style>
