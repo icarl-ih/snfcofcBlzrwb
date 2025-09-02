@@ -61,10 +61,21 @@ else
                     {
                         @foreach (var eval in PartidosEvaluados)
                         {
-                            <li class="list-group-item d-flex justify-content-between">
-                                <span>🆚 @eval.Rival</span>
-                                <span class="badge bg-primary">@((EstatusMatch)eval.EstatusMatchId)</span>
-                            </li>
+                            @if (eval.ClavePlus == true)
+                            {
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>🆚 @eval.Rival (PLUS)</span>
+                                    <span class="badge bg-primary">@((EstatusMatch)eval.EstatusMatchId)</span>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>🆚 @eval.Rival (SUB 19)</span>
+                                    <span class="badge bg-primary">@((EstatusMatch)eval.EstatusMatchId)</span>
+                                </li>
+                            }
+
                         }
                     }
                     else

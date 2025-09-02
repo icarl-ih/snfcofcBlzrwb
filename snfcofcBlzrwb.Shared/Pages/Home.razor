@@ -210,7 +210,7 @@ else
             jugadoresOrdenados = players.Where(j =>
                 (FilterSelected.Contains("Sub 19") && j.ClaveSub) ||
                 (FilterSelected.Contains("Plus") && j.ClavePlus)
-            ).ToList();
+            ).OrderByDescending(p => p.Ranking).ToList();
         }
     }
 
