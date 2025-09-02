@@ -1,4 +1,5 @@
 ﻿@page "/sugested_xi/{ObjectId}"
+@using Syncfusion.Blazor.DropDowns
 
 
 @inject IPlayerService PlayerService
@@ -14,10 +15,8 @@
             <div class="inline">
                 <span id="contentText" class="dropdown-size">
                     Formación seleccionada:
-                    <SfDropDownList TValue="string" TItem="string" CssClass="inlinecss" Placeholder="Selecciona una formación"
-                                    DataSource="@Formaciones" @bind-Value="FormacionSeleccionada"
-                                    Width="150px" PopupHeight="200px" PopupWidth="200px">
-                    </SfDropDownList>
+                    <SfDropDownList TValue="string" TItem="string" DataSource="@Formaciones" @bind-value="FormacionSeleccionada"
+                Placeholder="Selecciona una formación" Width="150px" PopupHeight="200px" PopupWidth="200px" />
                 </span>
             </div>
         </div>
@@ -151,7 +150,7 @@
     List<Player> FieldPlayerList = new List<Player>();
     List<Player> Suplentes = new List<Player>();
 
-    List<string> Formaciones = new()
+    List<string> Formaciones = new List<string>()
     {
         "1-2-3-1", "1-3-2-1"
     };

@@ -16,6 +16,17 @@
 
     }
 </button>
+<div class="chip-container">
+    @*Initialize the Filter Chips component*@
+    <SfChip Selection="SelectionType.Multiple" SelectedChips=@FilterSelected SelectedChipsChanged="OnFilterChanged" aria-label="Filter Chips">
+        <ChipItems>
+            <ChipItem Text="Todos"></ChipItem>
+            <ChipItem Text="Sub 19"></ChipItem>
+            <ChipItem Text="Plus"></ChipItem>
+
+        </ChipItems>
+    </SfChip>
+</div>
 @if (isRefreshing)
 {
     <p class="text-muted"></p>
@@ -34,11 +45,11 @@ else
             }
         </div>
         <NavButton Label="➕ Nuevo Jugador"
-                   TargetUrl="/playercrud/new"
-                   ButtonClass="btn btn-lg btn-success action-button"
-                   ConfirmBeforeNavigate="true"
-                   ConfirmMessage="¿Deseas registrar un nuevo jugador?" />
-        
+        TargetUrl="/playercrud/new"
+        ButtonClass="btn btn-lg btn-success action-button"
+        ConfirmBeforeNavigate="true"
+        ConfirmMessage="¿Deseas registrar un nuevo jugador?" />
+
     }
     else if (showAlert)
     {
@@ -51,15 +62,15 @@ else
 
 }
 <footer class="mt-5 text-center">
-    
+
     @* <SfButton CssClass="e-primary" IconCss="e-icons e-add" @onclick="IrANuevoJugador">
         ➕ Nuevo Jugador
     </SfButton> *@
     <NavButton Label="⚽ Partidos"
-               TargetUrl="/match/view"
-               ButtonClass="btn btn-lg btn-success action-button"
-               ConfirmBeforeNavigate="true"
-               ConfirmMessage="¿Deseas salir de esta página?" />
+    TargetUrl="/match/view"
+    ButtonClass="btn btn-lg btn-success action-button"
+    ConfirmBeforeNavigate="true"
+    ConfirmMessage="¿Deseas salir de esta página?" />
 
     @* <NavButton Label=" 📊 Evaluar Partidos"
                TargetUrl= "/evaluate"
@@ -128,7 +139,7 @@ else
 @code {
     private List<Player> players = new();
     private List<Player> jugadoresOrdenados;
-
+    public string[] FilterSelected = { "Todos" };
     private bool showAlert = false;
     void NuevoPlayer() => NavigationManager.NavigateTo("/playercrud/new");
     private bool isRefreshing = false;
@@ -147,6 +158,8 @@ else
         { 
             players = await PlayerService.GetAllAsync();
             jugadoresOrdenados = players.OrderByDescending(p => p.Ranking).ToList();
+            // FilterList = new List<string> { "Todos" };
+
 
         }
         catch (Exception)
@@ -162,7 +175,7 @@ else
         }
 
 
-        
+
     }
     private void IrANuevoJugador()
     {
@@ -178,5 +191,28 @@ else
     {
         NavigationManager.NavigateTo("/evaluate");
     }
+
+    void OnFilterChanged(string[] selectedChips)
+    {
+        FilterSelected = selectedChips;
+        if (FilterSelected.Length == 0)
+        {
+            FilterSelected =  ["Todos"] ;
+        }
+        if (FilterSelected.Contains("Todos"))
+        {
+            // Mostrar todos los jugadores si "Todos" está seleccionado o no hay filtro
+            jugadoresOrdenados = players.ToList();
+        }
+        else
+        {
+            // Filtrar según las categorías seleccionadas
+            jugadoresOrdenados = players.Where(j =>
+                (FilterSelected.Contains("Sub 19") && j.ClaveSub) ||
+                (FilterSelected.Contains("Plus") && j.ClavePlus)
+            ).ToList();
+        }
+    }
+
 
 }

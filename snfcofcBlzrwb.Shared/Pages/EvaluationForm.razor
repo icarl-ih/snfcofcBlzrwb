@@ -414,7 +414,7 @@ else
     {
         if (!Evaluation.Asistio) return 0;
 
-        float habilidad = Evaluation.FieldSkillScore * 0.1f;
+        float habilidad = Evaluation.FieldSkillScore * 0.2f;
 
         int disciplina = 0;
         if (Evaluation.RespetaCompaneros) disciplina += 20;
@@ -439,10 +439,10 @@ else
 
         int asistencia = Evaluation.Asistio ? 50 : 0;
         asistencia += Evaluation.FuePuntual ? 50 : 0;
-        float asistenciaScore = asistencia * 0.6f / 100f;
+        float asistenciaScore = asistencia * 0.5f / 100f;
 
         float totalScore = habilidad + disciplinaScore + asistenciaScore;
-        return totalScore * 5f;
+        return totalScore;
     }
 
     async Task SaveEvaluation()
