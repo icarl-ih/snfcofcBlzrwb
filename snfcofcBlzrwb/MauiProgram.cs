@@ -69,9 +69,10 @@ namespace snfcofcBlzrwb
             builder.Services.AddSingleton<ConnectivityService>();
             builder.Services.AddHttpClient(); // Asegura que HttpClient esté disponible
 
-            builder.Services.AddSingleton<ConnectivityService>();
-#if DEBUG
+            builder.Services.AddSingleton<ConnectivityService>();            
             builder.Services.AddBlazorWebViewDeveloperTools();
+
+#if DEBUG
             builder.Logging.AddDebug();
 #endif
 

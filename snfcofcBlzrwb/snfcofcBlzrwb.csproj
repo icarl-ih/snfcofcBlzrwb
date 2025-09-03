@@ -74,10 +74,6 @@
     <None Remove="Services\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Remove="wwwroot\Resources\images\campo.png" />
-  </ItemGroup>
-
 	
 
   <ItemGroup>
@@ -101,10 +97,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\snfcofcBlzrwb.Shared\snfcofcBlzrwb.Shared.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <MauiImage Include="wwwroot\Resources\images\campo.png" />
   </ItemGroup>
 
 </Project>

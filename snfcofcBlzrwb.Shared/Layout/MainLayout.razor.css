@@ -21,11 +21,12 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: 5px 5px 5px 15px
+    padding: 0px 0px 0px 0px
 }
 
 main {
     flex: 1;
+    padding: 0px 5px 2px 15px
 }
 
 .sidebar {
@@ -48,7 +49,7 @@ main {
     }
 
         .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
-            text-decoration: underline;
+            /*text-decoration: underline;*/
         }
 
         .top-row ::deep a:first-child {
