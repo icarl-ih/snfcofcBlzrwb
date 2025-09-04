@@ -80,7 +80,7 @@ else
     @if (!string.IsNullOrEmpty(message))
     {
         <footer>
-            <div class="alert alert-info mt-3">@message</div>
+            <SfMessage Severity="@currentSeverity">@message</SfMessage>
         </footer>
 
     }
@@ -95,6 +95,7 @@ else
     private string message;
 
     [Parameter] public string PlayerId { get; set; }
+    private MessageSeverity currentSeverity = MessageSeverity.Info;
 
 
     protected override async Task OnInitializedAsync()
@@ -124,12 +125,16 @@ else
             {
                 await PlayerService.SaveAsync(player);
                 message = "Jugador Guardado correctamente.";
+                currentSeverity = MessageSeverity.Success;
+
 
             }
         }
         catch (Exception ex)
         {
             message = $"Error: {ex.Message}";
+            currentSeverity = MessageSeverity.Warning;
+
         }
     }
 

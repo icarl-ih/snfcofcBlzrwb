@@ -16,13 +16,19 @@
 
     }
 </button>
+<NavButton Label="➕ Nuevo Jugador"
+           TargetUrl="/playercrud/new"
+           ButtonClass="btn btn-lg btn-success action-button"
+           ConfirmBeforeNavigate="true"
+           ConfirmMessage="¿Deseas registrar un nuevo jugador?" />
 <div class="chip-container">
     @*Initialize the Filter Chips component*@
-    <SfChip Selection="SelectionType.Multiple" SelectedChips=@FilterSelected SelectedChipsChanged="OnFilterChanged" aria-label="Filter Chips">
+    <SfChip Selection="SelectionType.Single" SelectedChips=@FilterSelected SelectedChipsChanged="OnFilterChanged" aria-label="Filter Chips">
         <ChipItems>
-            <ChipItem Text="Todos"></ChipItem>
-            <ChipItem Text="Sub 19"></ChipItem>
-            <ChipItem Text="Plus"></ChipItem>
+            <ChipItem Text="@($"Todos ({players.Count})")"></ChipItem>
+            <ChipItem Text="@($"Sub 19 ({players.Where(p => p.ClaveSub == true).Count().ToString()})")"></ChipItem>
+            <ChipItem Text="@($"Plus ({players.Where(p => p.ClaveSub == true).Count().ToString()})")"></ChipItem>
+            <ChipItem Text="@($"Ambas Categorías ({players.Where(p => p.ClaveSub == true && p.ClavePlus == true).Count().ToString()})")"></ChipItem>
 
         </ChipItems>
     </SfChip>
@@ -33,6 +39,7 @@
 }
 else
 {
+    
     @if (players != null && players.Count > 0)
     {
         <div class="row g-4">
@@ -44,19 +51,12 @@ else
 
             }
         </div>
-        <NavButton Label="➕ Nuevo Jugador"
-        TargetUrl="/playercrud/new"
-        ButtonClass="btn btn-lg btn-success action-button"
-        ConfirmBeforeNavigate="true"
-        ConfirmMessage="¿Deseas registrar un nuevo jugador?" />
+        
 
     }
     else if (showAlert)
     {
-        <p class="text-muted">Jugadores cargados: @players.Count</p>
-        <div class="alert alert-warning text-center" role="alert">
-            No se encontraron jugadores registrados. Redirigiendo al gestor de jugadores...
-        </div>
+        <SfMessage Severity="MessageSeverity.Error">No se encontraron jugadores registrados. Actualice la página</SfMessage>   
     }
 
 
@@ -66,12 +66,12 @@ else
     @* <SfButton CssClass="e-primary" IconCss="e-icons e-add" @onclick="IrANuevoJugador">
         ➕ Nuevo Jugador
     </SfButton> *@
-    <NavButton Label="⚽ Partidos"
+@*     <NavButton Label="⚽ Partidos"
     TargetUrl="/match/view"
     ButtonClass="btn btn-lg btn-success action-button"
     ConfirmBeforeNavigate="true"
     ConfirmMessage="¿Deseas salir de esta página?" />
-
+ *@
     @* <NavButton Label=" 📊 Evaluar Partidos"
                TargetUrl= "/evaluate"
                ButtonClass="btn btn-lg btn-success action-button"
@@ -157,7 +157,8 @@ else
         try
         { 
             players = await PlayerService.GetAllAsync();
-            jugadoresOrdenados = players.OrderByDescending(p => p.Ranking).ToList();
+            jugadoresOrdenados = players.OrderByDescending(j => j.PartidosJugados)
+            .ThenByDescending(j => j.Ranking).ToList();
             // FilterList = new List<string> { "Todos" };
 
 
@@ -197,19 +198,24 @@ else
         FilterSelected = selectedChips;
         if (FilterSelected.Length == 0)
         {
-            FilterSelected =  ["Todos"] ;
+            FilterSelected =  ["Todos (0)"] ;
         }
-        if (FilterSelected.Contains("Todos"))
+        if (FilterSelected.Contains("Todos (0)"))
         {
             // Mostrar todos los jugadores si "Todos" está seleccionado o no hay filtro
-            jugadoresOrdenados = players.ToList();
+            jugadoresOrdenados = players.OrderByDescending(j => j.PartidosJugados)
+            .ThenByDescending(j => j.Ranking).ToList();
+        }
+        else if (FilterSelected.Contains("Ambas Categorías (0)"))
+        {
+            jugadoresOrdenados = players.Where(p=>p.ClaveSub == true &&p.ClavePlus == true).OrderByDescending(p => p.Ranking).ToList();
         }
         else
         {
             // Filtrar según las categorías seleccionadas
             jugadoresOrdenados = players.Where(j =>
-                (FilterSelected.Contains("Sub 19") && j.ClaveSub) ||
-                (FilterSelected.Contains("Plus") && j.ClavePlus)
+                (FilterSelected.Contains("Sub 19 (0)") && j.ClaveSub) ||
+                (FilterSelected.Contains("Plus (0)") && j.ClavePlus)
             ).OrderByDescending(p => p.Ranking).ToList();
         }
     }

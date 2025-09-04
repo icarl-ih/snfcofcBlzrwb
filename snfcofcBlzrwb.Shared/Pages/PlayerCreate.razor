@@ -61,7 +61,7 @@
 
         @if (!string.IsNullOrEmpty(message))
         {
-            <div class="alert alert-info mt-4 text-center">@message</div>
+            <SfMessage Severity ="@currentSeverity">@message</SfMessage>
         }
     </div>
 </div>
@@ -129,7 +129,7 @@
     private string message;
 
     [Parameter] public string PlayerId { get; set; }
-
+    private MessageSeverity currentSeverity = MessageSeverity.Info;
 
     protected override async Task OnInitializedAsync()
     {
@@ -148,11 +148,13 @@
                            // Crear nuevo player
                 await PlayerService.CreatePlayerAsync(player);
                 message = "Jugador creado correctamente.";
+            currentSeverity = MessageSeverity.Success;
             
         }
         catch (Exception ex)
         {
             message = $"Error: {ex.Message}";
+            currentSeverity = MessageSeverity.Warning;
         }
     }
 

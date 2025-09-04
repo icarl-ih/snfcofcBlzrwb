@@ -1,15 +1,16 @@
-﻿using Microsoft.Extensions.Logging;
-using snfcofcBlzrwb.Shared.Services;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using snfcofcBlzrwb.Shared.Data;
-using snfcofcBlzrwb.Shared.Services.Sync;
-using SQLite;
-using Microsoft.Extensions.DependencyInjection;
-using System.Net.Http;
-using snfcofcBlzrwb.Shared.Services.Remote;
-using snfcofcBlzrwb.Shared.Services.Local;
+using snfcofcBlzrwb.Shared.Services;
 using snfcofcBlzrwb.Shared.Services.Implementations;
 using snfcofcBlzrwb.Shared.Services.Interfaces;
+using snfcofcBlzrwb.Shared.Services.Local;
+using snfcofcBlzrwb.Shared.Services.Remote;
+using snfcofcBlzrwb.Shared.Services.Sync;
+using SQLite;
 using Syncfusion.Blazor;
+using Syncfusion.Blazor.Popups;
+using System.Net.Http;
 
 namespace snfcofcBlzrwb
 {
@@ -27,6 +28,9 @@ namespace snfcofcBlzrwb
 
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddSyncfusionBlazor();
+            builder.Services.AddScoped<SfDialogService>();
+            //builder.Services.AddSyncfusionBlazor();
+            //builder.Services.AddSingleton<DialogService>();
             builder.Services.AddSingleton<DatabaseService>();
             builder.Services.AddSingleton<SQLiteAsyncConnection>(provider => {
                 DatabaseService.InitAsync().Wait();
@@ -36,14 +40,6 @@ namespace snfcofcBlzrwb
             builder.Services.AddScoped<IMatchService, MatchRemoteService>();
             builder.Services.AddScoped<IEvaluationService, EvaluationRemoteService>();
             builder.Services.AddScoped<ITeamService, TeamsRemoteService>();
-            //builder.Services.AddScoped<IPlayerService, PlayerLocalService>();
-            // Servicios locales
-            //builder.Services.AddSingleton<IPlayerService, PlayerLocalService>();
-            //builder.Services.AddSingleton<IMatchService, MatchLocalService>();
-            //builder.Services.AddSingleton<IEvaluationService, EvaluationLocalService>();
-            //builder.Services.AddScoped<IPlayerService, PlayerService>();
-            //builder.Services.AddScoped<IMatchService, MatchService>();
-            //builder.Services.AddScoped<IEvaluationService, EvaluationService>();
             builder.Services.AddScoped<ConnectivityService>();
             builder.Services.AddScoped<HttpClient>();
             //builder.Services.AddSyncfusionBlazor();
@@ -56,16 +52,6 @@ namespace snfcofcBlzrwb
             builder.Services.AddSingleton<ConnectivityService>();
             builder.Services.AddSingleton(new SQLiteAsyncConnection("players.db"));
             builder.Services.AddHttpClient(); // Esto registra HttpClient para inyección
-
-            //        builder.Services.AddHttpClient<IPlayerService, PlayerRemoteService>()
-            //.ConfigureHttpClient((sp, client) =>
-            //{
-            //    var settings = sp.GetRequiredService<AppSettings>();
-            //    client.BaseAddress = new Uri(settings.ParseBaseUrl);
-            //    client.DefaultRequestHeaders.Add("X-Parse-Application-Id", settings.ApplicationId);
-            //    client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", settings.RestApiKey);
-            //    client.DefaultRequestHeaders.Add("Content-Type", "application/json");
-            //});
             builder.Services.AddSingleton<ConnectivityService>();
             builder.Services.AddHttpClient(); // Asegura que HttpClient esté disponible
 

@@ -1,11 +1,12 @@
-using snfcofcBlzrwb.Shared.Services.Interfaces;
 using snfcofcBlzrwb.Shared.Services;
 using snfcofcBlzrwb.Shared.Services.Implementations;
+using snfcofcBlzrwb.Shared.Services.Interfaces;
+using snfcofcBlzrwb.Shared.Services.Local;
 using snfcofcBlzrwb.Shared.Services.Remote;
 using snfcofcBlzrwb.Shared.Services.Sync;
 using snfcofcBlzrwb.Web.Components;
 using Syncfusion.Blazor;
-using snfcofcBlzrwb.Shared.Services.Local;
+using Syncfusion.Blazor.Popups;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddSyncfusionBlazor();
+builder.Services.AddScoped<SfDialogService>();
 
 
 //builder.Services.AddSingleton(new AppSettings
