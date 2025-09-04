@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using snfcofcBlzrwb.Shared.Data;
 
 namespace snfcofcBlzrwb.Shared.Services.Remote
 {
@@ -14,6 +15,7 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
     {
         private readonly HttpClient _http;
         public bool IsOnline { get; private set; } = true;
+        private readonly AuthService _authService;
 
         public EvaluationRemoteService(HttpClient http)
         {
@@ -52,11 +54,11 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
         }
         public async Task SaveAsync(PlayerEvaluation evaluation)
         {
-            string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
+            //string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
             client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sessionToken);
+            client.DefaultRequestHeaders.Add("X-Parse-Session-Token",_authService.SessionToken );
 
             var payload = new Dictionary<string, object>
         {
@@ -128,11 +130,11 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
 
         public async Task DeleteAsync(string objectId)
         {
-            string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
+            //string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
             client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sessionToken);
+            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", _authService.SessionToken);
 
             var response = await client.DeleteAsync($"https://parseapi.back4app.com/classes/PlayerEvaluation/{objectId}");
             response.EnsureSuccessStatusCode();

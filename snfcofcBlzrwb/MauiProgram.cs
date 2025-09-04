@@ -12,6 +12,7 @@ using Syncfusion.Blazor;
 using Syncfusion.Blazor.Popups;
 using System.Net.Http;
 
+
 namespace snfcofcBlzrwb
 {
     public static class MauiProgram
@@ -36,10 +37,12 @@ namespace snfcofcBlzrwb
                 DatabaseService.InitAsync().Wait();
                 return DatabaseService.GetConnection();
             });
+            builder.Services.AddScoped<snfcofcBlzrwb.Shared.Services.Interfaces.IAuthService, AuthRemoteService>(); 
             builder.Services.AddScoped<IPlayerService, PlayerRemoteService>();
             builder.Services.AddScoped<IMatchService, MatchRemoteService>();
             builder.Services.AddScoped<IEvaluationService, EvaluationRemoteService>();
             builder.Services.AddScoped<ITeamService, TeamsRemoteService>();
+            builder.Services.AddScoped<RemoteService>();
             builder.Services.AddScoped<ConnectivityService>();
             builder.Services.AddScoped<HttpClient>();
             //builder.Services.AddSyncfusionBlazor();
@@ -50,7 +53,7 @@ namespace snfcofcBlzrwb
                 ParseBaseUrl = "https://parseapi.back4app.com/"
             });
             builder.Services.AddSingleton<ConnectivityService>();
-            builder.Services.AddSingleton(new SQLiteAsyncConnection("players.db"));
+            builder.Services.AddSingleton(new SQLiteAsyncConnection("ihsolutionsdb.db3"));
             builder.Services.AddHttpClient(); // Esto registra HttpClient para inyección
             builder.Services.AddSingleton<ConnectivityService>();
             builder.Services.AddHttpClient(); // Asegura que HttpClient esté disponible

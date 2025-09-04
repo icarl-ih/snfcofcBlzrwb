@@ -1,5 +1,23 @@
 ﻿@using snfcofcBlzrwb.Shared.Layout
-<Router AppAssembly="@typeof(MainLayout).Assembly">
+@using snfcofcBlzrwb.Shared.Pages
+
+<Router AppAssembly="@typeof(LoginLayout).Assembly">
+    <Found Context="routeData">
+        <LayoutView Layout="@typeof(LoginLayout)">
+                    <Login />
+        </LayoutView>
+
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(LoginLayout)">
+            <p>❌ Página no encontrada.</p>
+            <RedirectToLogin></RedirectToLogin>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+
+@* <Router AppAssembly="@typeof(MainLayout).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
     </Found>
@@ -9,3 +27,4 @@
         </LayoutView>
     </NotFound>
 </Router>
+ *@

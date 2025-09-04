@@ -1,4 +1,5 @@
 ﻿using snfcofcBlzrwb.Models;
+using snfcofcBlzrwb.Shared.Data;
 using snfcofcBlzrwb.Shared.Models;
 using snfcofcBlzrwb.Shared.Services.Interfaces;
 using System;
@@ -13,6 +14,7 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
 {
     public class TeamsRemoteService : ITeamService
     {
+        private readonly AuthService _authService;
         private readonly HttpClient _http;
         public bool IsOnline { get; private set; } = true;
 
@@ -57,11 +59,11 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
 
         public async Task SaveAsync(TeamModel team)
         {
-            string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
+            //string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
             client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sessionToken);
+            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", _authService.SessionToken);
 
             var parseObject = new Dictionary<string, object>
             {
@@ -135,11 +137,11 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
         
         public async Task<(string name, string url)> SubirFotoTeamAsync(byte[] data, string nombreArchivo)
         {
-            string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
+            //string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
             client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sessionToken);
+            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", _authService.SessionToken);
 
             var tipoMime = "image/jpeg";
             if (nombreArchivo.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
@@ -169,11 +171,11 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
 
         public async Task DeleteAsync(string objectId)
         {
-            string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
+            //string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
             client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sessionToken);
+            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", _authService.SessionToken);
 
             var response = await client.DeleteAsync($"https://parseapi.back4app.com/classes/Teams/{objectId}");
             response.EnsureSuccessStatusCode();

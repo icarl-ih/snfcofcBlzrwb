@@ -1,5 +1,7 @@
-﻿@inherits LayoutComponentBase
-@using Syncfusion.Blazor.Popups
+﻿@using snfcofcBlzrwb.Shared.Data
+@inherits LayoutComponentBase
+@inject AuthService authService
+
 
 <div class="page">
     <div class="sidebar">
@@ -10,16 +12,11 @@
         @* <div class="top-row px-4">
             <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
         </div> *@
-
         <article class="content px-4">
             @Body
-        </article>
+        </article> 
     </main>
 </div>
-@* <div class="main-layout">
-    @Body
-</div> *@
-
 
 <div id="blazor-error-ui" data-nosnippet>
     Ha ocurrido un error inesperado.
@@ -46,7 +43,7 @@
     }
 
     
-    
+  }  
         #blazor-error-ui.show {
             display: block;
         }

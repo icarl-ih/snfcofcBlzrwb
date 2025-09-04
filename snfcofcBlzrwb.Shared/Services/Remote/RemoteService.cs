@@ -1,6 +1,10 @@
-﻿using System;
+﻿using snfcofcBlzrwb.Shared.Data;
+using snfcofcBlzrwb.Shared.Models;
+using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -10,47 +14,93 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
 {
     public class RemoteService
     {
+        private readonly AuthService _authService;
         private readonly HttpClient _client;
-
+        private const string BaseUrl = "https://parseapi.back4app.com";
         private readonly string ApplicationId = "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB";
         private readonly string RestApiKey = "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c";
-        private readonly string SessionToken = "r:c9cccc509d533daf06bc928332d4670e";
+        //private readonly string SessionToken = "r:c9cccc509d533daf06bc928332d4670e";
+        private readonly IAuthService _authService;
 
+        public RemoteService(IAuthService authService)
+        {
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+        }
         public RemoteService(HttpClient client)
         {
             _client = client;
             _client.DefaultRequestHeaders.Add("X-Parse-Application-Id", ApplicationId);
             _client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", RestApiKey);
-            _client.DefaultRequestHeaders.Add("X-Parse-Session-Token", SessionToken);
+            //_client.DefaultRequestHeaders.Add("X-Parse-Session-Token", SessionToken);
         }
 
-        public async Task<(string name, string url)> SubirFotoUsuarioAsync(byte[] data, string nombreArchivo)
+        public async Task<(string sessiontoken, string objectId, string email)> ValidateUserAsync(string username, string password)
         {
-            var tipoMime = "image/jpeg";
-            if (nombreArchivo.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
-                tipoMime = "image/png";
-            else if (nombreArchivo.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || nombreArchivo.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
-                tipoMime = "image/jpeg";
-            else if (nombreArchivo.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
-                tipoMime = "image/gif";
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-Parse-Application-Id", ApplicationId);
+            client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", RestApiKey);
 
-            var content = new ByteArrayContent(data);
-            content.Headers.ContentType = new MediaTypeHeaderValue(tipoMime);
+            var url = $"https://parseapi.back4app.com/login?username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
 
-            var response = await _client.PostAsync($"https://parseapi.back4app.com/files/{nombreArchivo}", content);
+            var response = await _client.GetAsync(url);
+
+            var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                throw new Exception($"No se pudo subir el archivo: {errorContent}");
+                throw new Exception($"Login failed: {content}");
             }
 
-            var result = await response.Content.ReadAsStringAsync();
-            var json = JsonDocument.Parse(result);
-            return (
-                json.RootElement.GetProperty("name").GetString(),
-                json.RootElement.GetProperty("url").GetString()
+            var json = System.Text.Json.JsonDocument.Parse(content);
+            string sessionToken = json.RootElement.GetProperty("sessionToken").GetString();
+            string objectId = json.RootElement.GetProperty("objectId").GetString();
+            string email = "";
+            if (json.RootElement.TryGetProperty("email", out var emailToken) && emailToken.ValueKind == System.Text.Json.JsonValueKind.String)
+                email = emailToken.GetString();
+
+            var roles = await ObtenerRolesUsuarioAsync(objectId, sessionToken);
+
+
+            User user = new User() { 
+                ObjectId = objectId,
+                Email = email,
+                Username = username,
+                SessionToken = sessionToken,
+                Roles = roles
+            };
+
+            _authService.SetSession(user);
+
+
+
+
+
+            return (sessionToken, objectId, email);
+        }
+        public async Task<List<string>> ObtenerRolesUsuarioAsync(string userObjectId, string sessionToken)
+        {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-Parse-Application-Id", ApplicationId);
+            client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", RestApiKey);
+            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sessionToken);
+
+            var where = System.Web.HttpUtility.UrlEncode(
+                $"{{\"users\":{{\"__type\":\"Pointer\",\"className\":\"_User\",\"objectId\":\"{userObjectId}\"}}}}"
             );
+            var url = $"https://parseapi.back4app.com/roles?where={where}";
+            var response = await client.GetAsync(url);
+            var json = await response.Content.ReadAsStringAsync();
+
+            var doc = System.Text.Json.JsonDocument.Parse(json);
+            var roles = new List<string>();
+            if (doc.RootElement.TryGetProperty("results", out var results) && results.ValueKind == System.Text.Json.JsonValueKind.Array)
+            {
+                foreach (var role in results.EnumerateArray())
+                {
+                    roles.Add(role.GetProperty("name").GetString());
+                }
+            }
+            return roles;
         }
     }
 
