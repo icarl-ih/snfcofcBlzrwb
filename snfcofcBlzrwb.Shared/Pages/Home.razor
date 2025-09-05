@@ -1,6 +1,8 @@
 ﻿@page "/"
 @inject IPlayerService PlayerService
 @inject NavigationManager NavigationManager
+@inject IAuthService AuthRemoteService
+
 @using Syncfusion.Blazor.Buttons
 <h3 class="section-title">📋 Jugadores Registrados</h3>
 
@@ -154,24 +156,31 @@ else
     }
     protected override async Task OnInitializedAsync()
     {
-        try
-        { 
-            players = await PlayerService.GetAllAsync();
-            jugadoresOrdenados = players.OrderByDescending(j => j.PartidosJugados)
-            .ThenByDescending(j => j.Ranking).ToList();
-            // FilterList = new List<string> { "Todos" };
-
-
-        }
-        catch (Exception)
+        if (!AuthRemoteService.IsAuthenticated())
         {
-            if (players == null || players.Count == 0)
+            NavigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            try
             {
-                showAlert = true;
+                players = await PlayerService.GetAllAsync();
+                jugadoresOrdenados = players.OrderByDescending(j => j.PartidosJugados)
+                .ThenByDescending(j => j.Ranking).ToList();
+                // FilterList = new List<string> { "Todos" };
 
-                // Espera breve para mostrar la alerta antes de redirigir
-                await Task.Delay(10000);
-                NuevoPlayer();
+
+            }
+            catch (Exception)
+            {
+                if (players == null || players.Count == 0)
+                {
+                    showAlert = true;
+
+                    // Espera breve para mostrar la alerta antes de redirigir
+                    await Task.Delay(10000);
+                    NuevoPlayer();
+                }
             }
         }
 

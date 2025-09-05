@@ -4,9 +4,13 @@
 @using Syncfusion.Blazor.Buttons
 @using Syncfusion.Blazor.Notifications
 @using System.ComponentModel.DataAnnotations
+@using snfcofcBlzrwb.Shared.Models
 @using snfcofcBlzrwb.Shared.Services.Remote
 @using static snfcofcBlzrwb.Shared.Pages.Login
 @using snfcofcBlzrwb.Shared.Layout
+@inject IAuthService AuthRemoteService
+@inject NavigationManager NavigationManager
+
 
 @* <h3 class="login-title">Inicio de Sesión</h3>
  *@
@@ -152,6 +156,7 @@
 @code {
     private SfToast ToastObj;
     private LoginModel login = new LoginModel();
+
     private string username;
     private string password;
     private string errorMessage;
@@ -175,7 +180,31 @@
                 Username = username,
                 Password = password
             };
-            var result = await RemoteService.ValidateUserAsync(login.Username, login.Password);
+            var result = await AuthRemoteService.ValidateUserAsync(login.Username, login.Password);
+            var roles = await AuthRemoteService.ObtenerRolesUsuarioAsync(result.objectId,result.sessionToken);
+
+            var user = new User
+            {
+                ObjectId = result.objectId,
+                Username = login.Username,
+                Email = result.email,
+                SessionToken = result.sessionToken,
+                Roles = roles
+            };
+
+            AuthRemoteService.SetSession(user);
+
+            if (AuthRemoteService.IsAuthenticated())
+            {
+                NavigationManager.NavigateTo("/");
+                errorMessage = "Usuario Autenticado";
+            }
+            else
+            {
+                errorMessage = "Error al autenticar usuario. Intente más tarde";
+            }
+
+
         }catch (Exception ex)
         {
             if (ex.Message.Contains("null")){
@@ -209,9 +238,6 @@
         //     errorMessage = "Usuario o contraseña incorrectos";
         // }
     }
-
-    [Inject] private NavigationManager NavigationManager { get; set; }
-    [Inject] private RemoteService RemoteService { get; set; }
 
     public class LoginModel
     {

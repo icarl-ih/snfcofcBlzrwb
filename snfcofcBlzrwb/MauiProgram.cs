@@ -37,7 +37,9 @@ namespace snfcofcBlzrwb
                 DatabaseService.InitAsync().Wait();
                 return DatabaseService.GetConnection();
             });
-            builder.Services.AddScoped<snfcofcBlzrwb.Shared.Services.Interfaces.IAuthService, AuthRemoteService>(); 
+            builder.Services.AddScoped<AuthRemoteService>(); // ← Esto falta
+            builder.Services.AddScoped<IAuthService, AuthenticationService>();
+
             builder.Services.AddScoped<IPlayerService, PlayerRemoteService>();
             builder.Services.AddScoped<IMatchService, MatchRemoteService>();
             builder.Services.AddScoped<IEvaluationService, EvaluationRemoteService>();

@@ -1,7 +1,31 @@
 ﻿@using snfcofcBlzrwb.Shared.Layout
 @using snfcofcBlzrwb.Shared.Pages
+@using snfcofcBlzrwb
+@inject IAuthService AuthService
+
 
 <Router AppAssembly="@typeof(LoginLayout).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@LayoutSelector" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@LayoutSelector">
+            <p>❌ Página no encontrada.</p>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+@code {
+    private Type LayoutSelector =>
+        AuthService.IsAuthenticated()
+            ? typeof(MainLayout)
+            : typeof(LoginLayout);
+
+        
+}
+
+
+@* <Router AppAssembly="@typeof(LoginLayout).Assembly">
     <Found Context="routeData">
         <LayoutView Layout="@typeof(LoginLayout)">
                     <Login />
@@ -14,7 +38,7 @@
             <RedirectToLogin></RedirectToLogin>
         </LayoutView>
     </NotFound>
-</Router>
+</Router> *@
 
 
 @* <Router AppAssembly="@typeof(MainLayout).Assembly">

@@ -15,12 +15,12 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
     {
         private readonly HttpClient _http;
         public bool IsOnline { get; private set; } = true;
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
 
         public EvaluationRemoteService(HttpClient http)
         {
             _http = http;
-
+            
             // Configurar BaseAddress si no está ya configurado
             if (_http.BaseAddress == null)
                 _http.BaseAddress = new Uri("https://parseapi.back4app.com/");
@@ -58,7 +58,8 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
             client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            client.DefaultRequestHeaders.Add("X-Parse-Session-Token",_authService.SessionToken );
+            var sesionToken = _authService.GetSessionToken();
+            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sesionToken);
 
             var payload = new Dictionary<string, object>
         {
@@ -134,7 +135,8 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
             client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", _authService.SessionToken);
+            var sesionToken = _authService.GetSessionToken();
+            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sesionToken);
 
             var response = await client.DeleteAsync($"https://parseapi.back4app.com/classes/PlayerEvaluation/{objectId}");
             response.EnsureSuccessStatusCode();

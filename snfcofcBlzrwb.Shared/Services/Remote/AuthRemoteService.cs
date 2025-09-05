@@ -5,51 +5,83 @@
 #nullable enable
 
 using snfcofcBlzrwb.Models;
+using snfcofcBlzrwb.Shared.Models;
+using snfcofcBlzrwb.Shared.Services.Interfaces;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 namespace snfcofcBlzrwb.Shared.Services.Remote
 {
-    public class AuthRemoteService : IAuthService
+    using System.Net.Http;
+    using System.Text.Json;
+    using System.Web;
+    using snfcofcBlzrwb.Shared.Models;
+
+    public class AuthRemoteService
     {
-        public string SessionToken { get; private set; }
-        public string Username { get; private set; }
-        public bool IsAuthenticated => !string.IsNullOrEmpty(SessionToken);
+        private readonly HttpClient _client;
+        private const string BaseUrl = "https://parseapi.back4app.com";
+        private const string ApplicationId = "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB";
+        private const string RestApiKey = "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c";
 
-        private User? _currentUser;
-
-        public event Action? OnSessionChanged;
-
-        public task SetSession(User user)
+        public AuthRemoteService(HttpClient client)
         {
-            _currentUser = user;
-            OnSessionChanged?.Invoke();
+            _client = client;
+            _client.DefaultRequestHeaders.Add("X-Parse-Application-Id", ApplicationId);
+            _client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", RestApiKey);
         }
 
-        public User? GetCurrentUser()
+        public async Task<(string sessionToken, string objectId, string email)> LoginAsync(string username, string password)
         {
-            return _currentUser;
+
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
+            client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
+            var url = $"{BaseUrl}/login?username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
+            var response = await client.GetAsync(url);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"Login failed: {content}");
+
+            var json = JsonDocument.Parse(content);
+            string sessionToken = json.RootElement.GetProperty("sessionToken").GetString();
+            string objectId = json.RootElement.GetProperty("objectId").GetString();
+            string email = json.RootElement.TryGetProperty("email", out var emailToken) && emailToken.ValueKind == JsonValueKind.String
+                ? emailToken.GetString()
+                : "";
+
+            return (sessionToken, objectId, email);
         }
 
-        public bool IsAuthenticated()
+        public async Task<List<string>> GetRolesAsync(string userObjectId, string sessionToken)
         {
-            return _currentUser != null && !string.IsNullOrEmpty(_currentUser.SessionToken);
-        }
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-Parse-Application-Id", ApplicationId);
+            client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", RestApiKey);
+            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sessionToken);
 
-        public void ClearSession()
-        {
-            _currentUser = null;
-            OnSessionChanged?.Invoke();
-        }
+            var where = HttpUtility.UrlEncode(
+                $"{{\"users\":{{\"__type\":\"Pointer\",\"className\":\"_User\",\"objectId\":\"{userObjectId}\"}}}}"
+            );
 
-        public string? GetSessionToken()
-        {
-            return _currentUser?.SessionToken;
-        }
+            var url = $"{BaseUrl}/roles?where={where}";
+            var response = await client.GetAsync(url);
+            var json = await response.Content.ReadAsStringAsync();
 
-        public List<string> GetUserRoles()
-        {
-            return _currentUser?.Roles ?? new List<string>();
+            var doc = JsonDocument.Parse(json);
+            var roles = new List<string>();
+
+            if (doc.RootElement.TryGetProperty("results", out var results) && results.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var role in results.EnumerateArray())
+                {
+                    roles.Add(role.GetProperty("name").GetString());
+                }
+            }
+
+            return roles;
         }
     }
+
 }

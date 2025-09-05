@@ -15,7 +15,7 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
 {
     public class PlayerRemoteService : IPlayerService
     {
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
         private readonly HttpClient _http;
         public bool IsOnline { get; private set; } = true;
 
@@ -69,7 +69,9 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
             client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", _authService.SessionToken);
+            var sesionToken = _authService.GetSessionToken();
+            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sesionToken);
+
 
             var parseObject = new Dictionary<string, object>
             {
@@ -151,7 +153,8 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
             client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", _authService.SessionToken);
+            var sesionToken = _authService.GetSessionToken();
+            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sesionToken);
 
             var tipoMime = "image/jpeg";
             if (nombreArchivo.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
@@ -185,7 +188,8 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
             client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", _authService.SessionToken);
+            var sesionToken = _authService.GetSessionToken();
+            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sesionToken);
 
             var response = await client.DeleteAsync($"https://parseapi.back4app.com/classes/Players/{objectId}");
             response.EnsureSuccessStatusCode();

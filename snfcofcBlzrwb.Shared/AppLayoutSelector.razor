@@ -1,0 +1,8 @@
+﻿@using snfcofcBlzrwb.Shared.Layout
+@inject IAuthService AuthService
+
+@code {
+    private Type Layout => AuthService.IsAuthenticated()
+        ? typeof(MainLayout)
+        : typeof(LoginLayout);
+}
