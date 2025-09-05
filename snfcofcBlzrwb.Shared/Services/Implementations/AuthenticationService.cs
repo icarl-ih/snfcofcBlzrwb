@@ -4,6 +4,7 @@ using snfcofcBlzrwb.Shared.Services.Interfaces;
 using snfcofcBlzrwb.Shared.Services.Remote;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -24,9 +25,18 @@ namespace snfcofcBlzrwb.Shared.Services.Implementations
 
         public async Task<(string sessionToken, string objectId, string email)> ValidateUserAsync(string username, string password)
         {
-            var (sessionToken, objectId, email) = await _remote.LoginAsync(username, password);
-            var roles = await _remote.GetRolesAsync(objectId, sessionToken);
+            var sw = Stopwatch.StartNew();
+            Console.WriteLine($"[PERF] Iniciando el Login {DateTime.Now:HH:mm:ss.ffff}");
 
+            var (sessionToken, objectId, email) = await _remote.LoginAsync(username, password);
+            Console.WriteLine($"[PERF] LoginAsync tardó {sw.ElapsedMilliseconds} ms");
+
+            Console.WriteLine($"[PERF] Obteniendo Roles {DateTime.Now:HH:mm:ss.ffff}");
+
+            var roles = await _remote.GetRolesAsync(objectId, sessionToken);
+            Console.WriteLine($"[PERF] GetRolesAsync {sw.ElapsedMilliseconds} ms");
+
+            Console.WriteLine($"[PERF] Asignando nuevo usuario {DateTime.Now:HH:mm:ss.ffff}");
             _currentUser = new User
             {
                 ObjectId = objectId,
@@ -35,8 +45,12 @@ namespace snfcofcBlzrwb.Shared.Services.Implementations
                 SessionToken = sessionToken,
                 Roles = roles
             };
+            Console.WriteLine($"[PERF] Asignando sesion: {DateTime.Now:HH:mm:ss.ffff}");
 
+            SetSession(_currentUser);
             OnSessionChanged?.Invoke(_currentUser);
+
+            Console.WriteLine($"[PERF] Terminsndo y retornando: {DateTime.Now:HH:mm:ss.ffff}");
             return (sessionToken, objectId, email);
         }
 

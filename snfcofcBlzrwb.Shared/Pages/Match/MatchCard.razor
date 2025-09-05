@@ -1,7 +1,7 @@
 ﻿@using snfcofcBlzrwb.Models
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
-
+@inject IAuthService AuthService
 @inject IMatchService MatchService
 
 
@@ -28,34 +28,42 @@
             <p><strong>Fase:</strong> @Match.FaseCompetencia</p>
             <p><strong>Marcador:</strong> <span class="badge bg-dark">@Match.FaGoles - @Match.CoGoles</span></p>
             <p><strong>Estatus:</strong> <span class="badge @GetEstatusBadge(Match.EstatusMatchId)">@GetEstatusTexto(Match.EstatusMatchId)</span></p>
+            @if (!AuthService.GetUserRoles().Contains("ReadUser"))
+            {
+                <div class="text-end mt-3">
 
-            <div class="text-end mt-3">
-                @if (Match.EstatusMatchId == 0)
-                {
-                    <button class="btn btn-warning" @onclick="() => JugarPartido(Match.ObjectId)">
-                        ⚽ Jugar Partido
-                    </button>
-                    <button class="btn btn-outline-primary me-2" @onclick="xigo">XI INICIAL</button>
-                }
-                else
-                {
-                    
-                    
-                }
-
-                <button class="btn btn-danger" @onclick="EliminarMatch" disabled="@isDeleting">
-                    @if (isDeleting)
+                
+                    @if (Match.EstatusMatchId == 0)
                     {
-                        <span class="spinner-border spinner-border-sm me-2" role="status">Eliminando...</span>
-
+                        <button class="btn btn-warning" @onclick="() => JugarPartido(Match.ObjectId)">
+                            ⚽ Jugar Partido
+                        </button>
+                        <button class="btn btn-outline-primary me-2" @onclick="xigo">XI INICIAL</button>
                     }
                     else
                     {
-                        <span class="spinner-border spinner-border-sm me-2" role="status">Eliminar Partido</span>
+                    
+                    
                     }
-                </button>
+                    @if (AuthService.GetUserRoles().Contains("B4aAdminUser"))
+                    {
+                        <button class="btn btn-danger" @onclick="EliminarMatch" disabled="@isDeleting">
+                            @if (isDeleting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status">Eliminando...</span>
 
-            </div>
+                            }
+                            else
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status">Eliminar Partido</span>
+                            }
+                        </button>
+                    }
+                    
+
+                </div>
+            }
+            
         </CardContent>
     </SfCard>
 </div>

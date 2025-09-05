@@ -1,8 +1,27 @@
-﻿@inherits LayoutComponentBase
+﻿@using snfcofcBlzrwb.Shared.Services
+@inherits LayoutComponentBase
+@inject ToastService ToastService
 
 <main class="login-container">
     @Body
+    
+    <SfToast @ref="ToastRef" ShowCloseButton="true" Timeout="5000">
+        <ToastPosition X="Center" Y="Top"></ToastPosition>
+    </SfToast>
 </main>
+
+
+@code {
+    private SfToast? ToastRef;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender && ToastRef != null)
+        {
+            ToastService.Register(ToastRef);
+        }
+    }
+}
 
 <style>
     #blazor-error-ui {

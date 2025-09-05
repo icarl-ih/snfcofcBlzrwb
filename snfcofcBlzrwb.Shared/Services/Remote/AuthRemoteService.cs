@@ -1,9 +1,4 @@
-﻿#region ensamblado snfcofcBlzrwb.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// C:\Users\carlos.ibarra\source\repos\snfcofcBlzrwb\snfcofcBlzrwb.Shared\obj\Debug\net9.0\ref\snfcofcBlzrwb.Shared.dll
-#endregion
-
-#nullable enable
-
+﻿
 using snfcofcBlzrwb.Models;
 using snfcofcBlzrwb.Shared.Models;
 using snfcofcBlzrwb.Shared.Services.Interfaces;

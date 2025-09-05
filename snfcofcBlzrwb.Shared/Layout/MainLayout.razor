@@ -1,5 +1,7 @@
 ﻿@using snfcofcBlzrwb.Shared.Data
+@using snfcofcBlzrwb.Shared.Services
 @inherits LayoutComponentBase
+@inject ToastService ToastService
 
 
 <div class="page">
@@ -23,6 +25,21 @@
     <span class="dismiss">🗙</span>
 </div>
 
+<SfToast @ref="ToastRef" ShowCloseButton="true" Timeout="5000">
+    <ToastPosition X="Center" Y="Top"></ToastPosition>
+</SfToast>
+
+@code {
+    private SfToast? ToastRef;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender && ToastRef != null)
+        {
+            ToastService.Register(ToastRef);
+        }
+    }
+}
 <style>
     .main-layout {
         padding: 1rem;

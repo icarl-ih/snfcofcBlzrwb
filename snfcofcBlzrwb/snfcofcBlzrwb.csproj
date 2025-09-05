@@ -96,7 +96,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
     <PackageReference Include="Microsoft.Maui.Essentials" Version="9.0.82" />
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
-    <PackageReference Include="Syncfusion.Blazor" Version="29.2.11" />
   </ItemGroup>
 
   <ItemGroup>

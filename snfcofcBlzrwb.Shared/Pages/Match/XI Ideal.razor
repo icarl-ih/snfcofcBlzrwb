@@ -172,7 +172,7 @@
     {
         ["1-2-3-1"]    = new()
         {
-            ["POR"] = new Point(40, 90), // Portero
+            ["POR"] = new Point(50, 80), // Portero
             ["LI"] = new Point(20, 60), ["LD"] = new Point(60, 60), // Defensas Laterales
             // ["DFC1"] = new Point(20,70), ["DFC2"] = new Point(90,70),
             ["MI"] = new Point(5, 30), ["MC"] = new Point(40, 30), ["MD"] = new Point(75, 30),// Mediocampistas
@@ -231,30 +231,128 @@
 
         PlayerList = await PlayerService.GetAllAsync();
         var candidatos = new List<Player>();
-        if (Match.ClavePlus == true)
-        {
-            candidatos = PlayerList
-            .Where(j => j.ClavePlus == Match.ClavePlus)
-            .OrderByDescending(j => j.PartidosJugados)
-            .ThenByDescending(j => j.Ranking)
-            .Take(Posiciones[FormacionSeleccionada].Count)
-            .ToList();
-        }
-        else
-        {
-            candidatos = PlayerList
-            .Where(j => j.ClaveSub == Match.ClaveSub)
-            .OrderByDescending(j => j.PartidosJugados)
-            .ThenByDescending(j => j.Ranking)
-            .Take(Posiciones[FormacionSeleccionada].Count)
-            .ToList();
-        }
         var posicionesFormacion = Posiciones[FormacionSeleccionada];
         var porteros = posicionesFormacion.Where(p => p.Key == "POR").ToList();
         var defensas = posicionesFormacion.Where(p => p.Key.StartsWith("DF") || p.Key == "LI" || p.Key == "LD" || p.Key == "DFC").ToList();
         var mediocampistas = posicionesFormacion.Where(p => p.Key.StartsWith("M") || p.Key == "EI" || p.Key == "ED" || p.Key == "MC" || p.Key == "MI" || p.Key == "MD").ToList();
         var delanteros = posicionesFormacion.Where(p => p.Key == "DC" || p.Key == "MP").ToList();
 
+        if (Match.ClavePlus == true)
+        {
+            var porteroselected = PlayerList
+            .Where(j => j.ClavePlus == Match.ClavePlus)
+            .Where(j => j.Posicion == "POR")
+            .OrderByDescending(j => j.PartidosJugados)
+            .ThenByDescending(j => j.Ranking)
+            .Take(porteros.Count()).ToList();
+            foreach(var i in porteroselected)
+            {
+                candidatos.Add(i);
+            }
+
+            var defensaSelected = PlayerList
+            .Where(j => j.ClavePlus == Match.ClavePlus)
+            .Where(j => j.Posicion.StartsWith("DF"))
+            .OrderByDescending(j => j.PartidosJugados)
+            .ThenByDescending(j => j.Ranking)
+            .Take(porteros.Count()).ToList();
+
+
+            
+        }
+        else
+        {
+            var porteroselected = PlayerList
+            .Where(j => j.ClaveSub == Match.ClaveSub)
+            .Where(j => j.Posicion == "POR")
+            .OrderByDescending(j => j.PartidosJugados)
+            .ThenByDescending(j => j.Ranking)
+            .Take(porteros.Count()).ToList();
+            if(porteroselected.Count != 0)
+            {
+                foreach (var i in porteroselected)
+                {
+                    candidatos.Add(i);
+                }
+            }
+            
+
+            var defensaSelected = PlayerList
+            .Where(j => j.ClaveSub == Match.ClaveSub)
+            .Where(j => j.Posicion.StartsWith("DF"))
+            .OrderByDescending(j => j.PartidosJugados)
+            .ThenByDescending(j => j.Ranking)
+            .Take(defensas.Count()).ToList();
+            if(defensaSelected.Count() != 0)
+            {
+                foreach (var i in defensaSelected)
+                {
+                    candidatos.Add(i);
+                }
+            }
+            else
+            {
+                var lateraleSelected = PlayerList
+                .Where(j => j.ClaveSub == Match.ClaveSub)
+                .Where(j => j.Posicion.StartsWith("DF") || j.Posicion == "LI" || j.Posicion == "LD")
+                .OrderByDescending(j => j.PartidosJugados)
+                .ThenByDescending(j => j.Ranking)
+                .Take(defensas.Count()).ToList();
+
+                if(lateraleSelected.Count() != 0)
+                {
+                    foreach (var i in lateraleSelected)
+                    {
+                        candidatos.Add(i);
+                    }
+                }
+            }
+            var medioselected = PlayerList
+            .Where(j => j.ClaveSub == Match.ClaveSub)
+            .Where(j => j.Posicion.StartsWith("M"))
+            .OrderByDescending(j => j.PartidosJugados)
+            .ThenByDescending(j => j.Ranking)
+            .Take(mediocampistas.Count()).ToList();
+            if(medioselected.Count() != 0)
+            {
+                foreach (var i in medioselected)
+                {
+                    candidatos.Add(i);
+                }
+            }
+            else
+            {
+                var extremoSelected = PlayerList
+                .Where(j => j.ClaveSub == Match.ClaveSub)
+                .Where(j => j.Posicion.StartsWith("M") || j.Posicion == "EI" || j.Posicion == "ED")
+                .OrderByDescending(j => j.PartidosJugados)
+                .ThenByDescending(j => j.Ranking)
+                .Take(mediocampistas.Count()).ToList();
+
+                if (extremoSelected.Count() != 0)
+                {
+                    foreach (var i in extremoSelected)
+                    {
+                        candidatos.Add(i);
+                    }
+                }
+            }
+            
+            var Puntaselected = PlayerList
+            .Where(j => j.ClaveSub == Match.ClaveSub)
+            .Where(j => j.Posicion == "DC")
+            .OrderByDescending(j => j.PartidosJugados)
+            .ThenByDescending(j => j.Ranking)
+            .Take(delanteros.Count()).ToList();
+            if (Puntaselected.Count != 0)
+            {
+                foreach (var i in Puntaselected)
+                {
+                    candidatos.Add(i);
+                }
+            }
+        }
+        
         var XI = new List<Player>();
         var usados = new HashSet<string>(); // Para evitar duplicados
 

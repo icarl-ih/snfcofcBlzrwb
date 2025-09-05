@@ -1,10 +1,10 @@
 ﻿@using snfcofcBlzrwb.Models
-@using Syncfusion.Blazor.Popups
 @using Syncfusion.Blazor.Buttons
 @inject NavigationManager NavigationManager
 @inject IPlayerService PlayerService
 @inject IJSRuntime JSRuntime
 @inject Syncfusion.Blazor.Popups.SfDialogService DialogService
+@inject IAuthService AuthService
 
 
 <div class="col-md-6 mb-4 fade-card @(isDeleted ? "fade-out" : "")">
@@ -45,22 +45,30 @@
                     </div>
 
 
-                    <div class="text-end mt-3">
-                        <SfButton class="btn btn-primary" @onclick="EditarPlayer">Editar Player</SfButton>
-                        <SfButton class="btn btn-primary" @onclick="EvaluarMatchs">📊 Evaluar Partidos</SfButton>
-                        <SfButton class="btn btn-danger" @onclick="EliminarPlayer" disabled="@isDeleting">
-                            @if (isDeleting)
+                    @if (!AuthService.GetUserRoles().Contains("ReadUser"))
+                    {
+                        <div class="text-end mt-3">
+
+                            <SfButton class="btn btn-primary" @onclick="EditarPlayer">Editar Player</SfButton>
+                            <SfButton class="btn btn-primary" @onclick="EvaluarMatchs">📊 Evaluar Partidos</SfButton>
+                            @if (AuthService.GetUserRoles().Contains("B4aAdminUser"))
                             {
-                                <span class="spinner-border spinner-border-sm me-2" role="status">Eliminando...</span>
-                                
-                            }
-                            else
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status">Eliminar Player</span>
+                                <SfButton class="btn btn-danger" @onclick="EliminarPlayer" disabled="@isDeleting">
+                                    @if (isDeleting)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status">Eliminando...</span>
+
                                     }
-                            
-                        </SfButton>
-                    </div>
+                                    else
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status">Eliminar Player</span>
+                                    }
+
+                                </SfButton>
+
+                            }
+                        </div>
+                    }
                 </div>
             </div>
         </CardContent>

@@ -131,11 +131,7 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             response.EnsureSuccessStatusCode();
         }
 
-        private readonly RemoteService _remoteService;
-        public MatchRemoteService(RemoteService remoteService)
-        {
-            _remoteService = remoteService;
-        }
+       
 
         public async Task<(string name, string url)> SubirFotoEquipoAsync(byte[] data, string nombreArchivo)
         {

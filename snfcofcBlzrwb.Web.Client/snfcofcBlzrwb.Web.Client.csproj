@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
-    <PackageReference Include="Syncfusion.Blazor" Version="30.2.7" />
   </ItemGroup>
 
   <ItemGroup>

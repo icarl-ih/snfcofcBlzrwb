@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.ihsolutions.snfcofc" android:versionCode="1" android:versionName="1.0.2025.090500" android:installLocation="auto">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.ihsolutions.snfcofc" android:versionCode="1" android:versionName="1.0.2025.090516" android:installLocation="auto">
 	<application android:allowBackup="true" android:icon="@mipmap/icon50" android:supportsRtl="true" android:label="XI INICIAL SFCO"></application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.INTERNET" />

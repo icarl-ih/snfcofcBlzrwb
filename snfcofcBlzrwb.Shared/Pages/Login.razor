@@ -2,14 +2,19 @@
 @layout LoginLayout
 @using Syncfusion.Blazor.Inputs
 @using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor
 @using Syncfusion.Blazor.Notifications
 @using System.ComponentModel.DataAnnotations
+@using System.Diagnostics
 @using snfcofcBlzrwb.Shared.Models
+@using snfcofcBlzrwb.Shared.Services
 @using snfcofcBlzrwb.Shared.Services.Remote
 @using static snfcofcBlzrwb.Shared.Pages.Login
 @using snfcofcBlzrwb.Shared.Layout
 @inject IAuthService AuthRemoteService
 @inject NavigationManager NavigationManager
+@inject ToastService ToastService
+
 
 
 @* <h3 class="login-title">Inicio de Sesión</h3>
@@ -20,12 +25,12 @@
 
         <div class="login-field">
             <label for="usuario">Usuario:</label>
-            <SfTextBox @bind-Value="username" Placeholder="Ingresa tu usuario" FloatLabelType="FloatLabelType.Auto" CssClass="input-style" />
+            <SfTextBox @bind-Value="username"  Placeholder="Ingresa tu usuario" FloatLabelType="FloatLabelType.Auto" CssClass="input-style input-uppercase" />
         </div>
 
         <div class="login-field">
             <label for="password">Contraseña:</label>
-            <SfTextBox @bind-Value="password" Type="InputType.Password" Placeholder="Ingresa tu contraseña" FloatLabelType="FloatLabelType.Auto" CssClass="input-style" />
+            <SfTextBox  @bind-Value="password" Type="InputType.Password" Placeholder="Ingresa tu contraseña" FloatLabelType="FloatLabelType.Auto" CssClass="input-style" />
         </div>
 
         <div class="login-button">
@@ -39,18 +44,25 @@
             @* <SfToast @ref="ToastObj" ShowCloseButton="true" Timeout="4000" CssClass="e-toast-danger" Title="Error de autenticación" Content="@errorMessage">
                 <ToastPosition X="@Toastposition"></ToastPosition>
                 <ToastPosition Y="@ToastY"/>
-            </SfToast> *@
-        
+            </SfToast>
+         *@
     </div>
 </div>
-<SfToast @ref = "ToastObj" ID="toast_type">
-    <ToastPosition X="@Toastposition" Y="@ToastY"></ToastPosition>
-    
-
+@* <SfToast ID="toast_default" @ref="ToastObj" Title="Adaptive Tiles Meeting" Content="@ToastContent" Timeout="10000">
+    <ToastPosition X="Center"></ToastPosition>
 </SfToast>
+ *@
+<div class="col-lg-12 col-sm-12 col-md-12 center">
+    <div id="toastBtnDefault" style="margin: auto;text-align: center">
+        <SfButton @onclick="@ShowToast"> Show Toast </SfButton>
+    </div>
+</div>
 
 <style>
-
+    #toast_default .e-meeting::before {
+        content: "\e705";
+        font-size: 17px;
+    }
 
     @@font-face {
         font-family: 'Toast_icons';
@@ -152,24 +164,46 @@
     .login-button {
         text-align: center;
     }
+
+    .input-uppercase input {
+        text-transform: uppercase;
+    }
 </style>            
 @code {
-    private SfToast ToastObj;
+    SfToast? ToastObj;
+
     private LoginModel login = new LoginModel();
 
     private string username;
     private string password;
     private string errorMessage;
+    private string ToastContent = "Conference Room 01 / Building 135 10:00 AM-10:30 AM";
 
+    private async Task ShowToast()
+    {
+        // await Task.Run();
+        await Task.Delay(1000); // deja respirar al UI
+
+
+        await InvokeAsync(async () =>
+        {
+            Console.WriteLine($"[PERF] ShowToast Iniciado {DateTime.Now:HH:mm:ss.ffff}");
+            await ToastService.ShowInfo("Demo: Prueba1");
+
+        });
+        Console.WriteLine($"[PERF] Show Toast finalizado en {DateTime.Now:HH:mm:ss.ffff}");
+
+        // await ToastService.ShowInfo("Demo: Prueba1");
+    }
     private string Toastposition = "Center";
     private string ToastY = "Top";
-    private List<ToastModel> Toast = new List<ToastModel>
-    {
-        new ToastModel{ Title = "Warning!", Content="There was a problem with your network connection.", CssClass="e-toast-warning", Icon="e-warning toast-icons" },
-        new ToastModel{ Title = "Success!", Content="Acceso correcto . . . \n Iniciando sistema", CssClass="e-toast-success", Icon="e-success toast-icons" },
-        new ToastModel{ Title = "Error!", Content="Usuario/Contraseña inválido, revisa tu informcación", CssClass="e-toast-danger", Icon="e-error toast-icons" },
-        new ToastModel{ Title = "Information!", Content="Please read the comments carefully.", CssClass="e-toast-info", Icon="e-info toast-icons" }
-    };
+    // private List<ToastModel> Toast = new List<ToastModel>
+    // {
+    //     new ToastModel{ Title = "Warning!", Content="There was a problem with your network connection.", CssClass="e-toast-warning", Icon="e-warning toast-icons" },
+    //     new ToastModel{ Title = "Success!", Content="Acceso correcto . . . \n Iniciando sistema", CssClass="e-toast-success", Icon="e-success toast-icons" },
+    //     new ToastModel{ Title = "Error!", Content="Usuario/Contraseña inválido, revisa tu informcación", CssClass="e-toast-danger", Icon="e-error toast-icons" },
+    //     new ToastModel{ Title = "Information!", Content="Please read the comments carefully.", CssClass="e-toast-info", Icon="e-info toast-icons" }
+    // };
 
     private async Task HandleLogin()
     {
@@ -177,27 +211,22 @@
         {
             login = new LoginModel()
             {
-                Username = username,
+                Username = username.ToUpper(),
                 Password = password
             };
-            var result = await AuthRemoteService.ValidateUserAsync(login.Username, login.Password);
-            var roles = await AuthRemoteService.ObtenerRolesUsuarioAsync(result.objectId,result.sessionToken);
+            var sw = Stopwatch.StartNew();
+            Console.WriteLine($"[PERF] Login Iniciado {DateTime.Now:HH:mm:ss.ffff}");
+            var result = await Task.Run(() => AuthRemoteService.ValidateUserAsync(login.Username, login.Password));
+            sw.Stop();
+            Console.WriteLine($"[PERF] Login Terminado {DateTime.Now:HH:mm:ss.ffff}");
 
-            var user = new User
-            {
-                ObjectId = result.objectId,
-                Username = login.Username,
-                Email = result.email,
-                SessionToken = result.sessionToken,
-                Roles = roles
-            };
-
-            AuthRemoteService.SetSession(user);
+            // var roles = await AuthRemoteService.ObtenerRolesUsuarioAsync(result.objectId,result.sessionToken);
 
             if (AuthRemoteService.IsAuthenticated())
             {
                 NavigationManager.NavigateTo("/");
                 errorMessage = "Usuario Autenticado";
+                await InvokeAsync(async () => await ToastService.ShowSuccess(errorMessage));
             }
             else
             {
@@ -222,11 +251,13 @@
                 errorMessage = ex.Message;
             }
             // errorMessage = ex.Message;
-            // var errortoast = new ToastModel
-            // {
-            //     Title = "Error!", Content = errorMessage, CssClass= "e-toast-danger", Icon="e-error toast-icons" 
-            // };
-            // await this.ToastObj.ShowAsync(Toast[0]);
+            await InvokeAsync(async () =>
+        {
+            Console.WriteLine($"[PERF] ShowToast Iniciado {DateTime.Now:HH:mm:ss.ffff}");
+            await ToastService.ShowInfo(errorMessage);
+
+        });
+            Console.WriteLine($"[PERF] Show Toast finalizado en {DateTime.Now:HH:mm:ss.ffff}");
         }
 
         // if (username == "admin" && password == "1234")
