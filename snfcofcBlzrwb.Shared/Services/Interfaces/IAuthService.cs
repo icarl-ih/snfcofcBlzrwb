@@ -10,15 +10,23 @@ using System.Threading.Tasks;
 
 namespace snfcofcBlzrwb.Shared.Services.Interfaces
 {
+    // IAuthService.cs
     public interface IAuthService
     {
         event Action<User> OnSessionChanged;
 
+        // Login que ya tienes:
         Task<(string sessionToken, string objectId, string email)> ValidateUserAsync(string username, string password);
+
+        // NUEVO: restaurar sesión al arrancar app
+        Task InitializeAsync();
+
+        // Ya existente:
         Task<List<string>> ObtenerRolesUsuarioAsync(string userObjectId, string sessionToken);
 
+        // Estado de sesión
         void SetSession(User user);
-        bool IsAuthenticated();
+        bool IsAuthenticated();          // puedes mantenerlo
         List<string> GetUserRoles();
         string GetSessionToken();
         User GetCurrentUser();

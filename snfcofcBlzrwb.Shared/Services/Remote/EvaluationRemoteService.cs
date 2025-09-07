@@ -13,14 +13,15 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
 {
     public class EvaluationRemoteService : IEvaluationService
     {
+        private readonly IAuthService _auth;
         private readonly HttpClient _http;
         public bool IsOnline { get; private set; } = true;
         private readonly IAuthService _authService;
 
-        public EvaluationRemoteService(HttpClient http)
+        public EvaluationRemoteService(HttpClient http, IAuthService auth)
         {
             _http = http;
-            
+            _auth = auth;
             // Configurar BaseAddress si no está ya configurado
             if (_http.BaseAddress == null)
                 _http.BaseAddress = new Uri("https://parseapi.back4app.com/");

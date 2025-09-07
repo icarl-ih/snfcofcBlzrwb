@@ -10,18 +10,13 @@ namespace snfcofcBlzrwb.Shared.Models
 {
     public class User
     {
-        [JsonPropertyName("objectId")]
-        public string ObjectId { get; set; }        
-        [JsonPropertyName("username")]
+        public string ObjectId { get; set; }
         public string Username { get; set; }
-        [JsonPropertyName("sessionToken")]
-        public string SessionToken { get; set; }
-        [JsonPropertyName("email")]
         public string Email { get; set; }
+        // No dependas de que Parse te lo devuelva luego: lo gestionamos nosotros
         public List<string> Roles { get; set; } = new();
-
-
     }
+
     public enum RolUser
     {
         Ninguno,

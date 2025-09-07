@@ -14,15 +14,16 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
 {
     public class TeamsRemoteService : ITeamService
     {
-        private readonly IAuthService _authService;
+        private readonly IAuthService _auth;
         private readonly HttpClient _http;
         public bool IsOnline { get; private set; } = true;
 
         public void SetConnectivity(bool isOnline) => IsOnline = isOnline;
 
-        public TeamsRemoteService(HttpClient http)
+        public TeamsRemoteService(HttpClient http, IAuthService auth)
         {
             _http = http;
+            _auth = auth;
 
             // Configurar BaseAddress si no está ya configurado
             if (_http.BaseAddress == null)
@@ -63,7 +64,7 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
             client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            var sesionToken = _authService.GetSessionToken();
+            var sesionToken = _auth.GetSessionToken();
             client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sesionToken);
 
             var parseObject = new Dictionary<string, object>
@@ -142,7 +143,7 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
             client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            var sesionToken = _authService.GetSessionToken();
+            var sesionToken = _auth.GetSessionToken();
             client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sesionToken);
 
             var tipoMime = "image/jpeg";
@@ -177,7 +178,7 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
             client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            var sesionToken = _authService.GetSessionToken();
+            var sesionToken = _auth.GetSessionToken();
             client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sesionToken);
 
             var response = await client.DeleteAsync($"https://parseapi.back4app.com/classes/Teams/{objectId}");

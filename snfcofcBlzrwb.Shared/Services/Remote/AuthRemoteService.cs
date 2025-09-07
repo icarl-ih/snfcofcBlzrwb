@@ -29,11 +29,8 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
         public async Task<(string sessionToken, string objectId, string email)> LoginAsync(string username, string password)
         {
 
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
-            client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
             var url = $"{BaseUrl}/login?username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
-            var response = await client.GetAsync(url);
+            var response = await _client.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -51,17 +48,14 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
 
         public async Task<List<string>> GetRolesAsync(string userObjectId, string sessionToken)
         {
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("X-Parse-Application-Id", ApplicationId);
-            client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", RestApiKey);
-            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sessionToken);
+            _client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sessionToken);
 
             var where = HttpUtility.UrlEncode(
                 $"{{\"users\":{{\"__type\":\"Pointer\",\"className\":\"_User\",\"objectId\":\"{userObjectId}\"}}}}"
             );
 
             var url = $"{BaseUrl}/roles?where={where}";
-            var response = await client.GetAsync(url);
+            var response = await _client.GetAsync(url);
             var json = await response.Content.ReadAsStringAsync();
 
             var doc = JsonDocument.Parse(json);
@@ -78,5 +72,6 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             return roles;
         }
     }
+
 
 }

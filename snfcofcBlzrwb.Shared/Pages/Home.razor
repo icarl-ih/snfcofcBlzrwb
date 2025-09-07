@@ -18,11 +18,15 @@
 
     }
 </button>
-<NavButton Label="➕ Nuevo Jugador"
+@if (!AuthRemoteService.GetUserRoles().Contains("ReadUser"))
+{
+    <NavButton Label="➕ Nuevo Jugador"
            TargetUrl="/playercrud/new"
            ButtonClass="btn btn-lg btn-success action-button"
            ConfirmBeforeNavigate="true"
            ConfirmMessage="¿Deseas registrar un nuevo jugador?" />
+}
+
 <div class="chip-container">
     @*Initialize the Filter Chips component*@
     <SfChip Selection="SelectionType.Single" SelectedChips=@FilterSelected SelectedChipsChanged="OnFilterChanged" aria-label="Filter Chips">

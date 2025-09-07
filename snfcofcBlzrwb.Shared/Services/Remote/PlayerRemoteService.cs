@@ -1,5 +1,6 @@
 ﻿using snfcofcBlzrwb.Models;
 using snfcofcBlzrwb.Shared.Models;
+using snfcofcBlzrwb.Shared.Services.Implementations;
 using snfcofcBlzrwb.Shared.Services.Interfaces;
 using System.Net.Http.Headers;
 using System.Text;
@@ -9,16 +10,16 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
 {
     public class PlayerRemoteService : IPlayerService
     {
-        private readonly IAuthService _authService;
+        private readonly IAuthService _auth;
         private readonly HttpClient _http;
         public bool IsOnline { get; private set; } = true;
 
         public void SetConnectivity(bool isOnline) => IsOnline = isOnline;
 
-        public PlayerRemoteService(HttpClient http)
+        public PlayerRemoteService(HttpClient http,IAuthService auth)
         {
             _http = http;
-
+            _auth = auth;
             // Configurar BaseAddress si no está ya configurado
             if (_http.BaseAddress == null)
                 _http.BaseAddress = new Uri("https://parseapi.back4app.com/");
@@ -58,16 +59,18 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
 
         public async Task SaveAsync(Player player)
         {
+            try
+            {
 
-            //string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
-            client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            var sesionToken = _authService.GetSessionToken();
-            client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sesionToken);
+                //string sessionToken = "r:c9cccc509d533daf06bc928332d4670e";
+                var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
+                client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
+                var sesionToken = _auth.GetSessionToken();
+                client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sesionToken);
 
 
-            var parseObject = new Dictionary<string, object>
+                var parseObject = new Dictionary<string, object>
             {
                 { "Nombre", player.Nombre },
                 { "Posicion", player.Posicion },
@@ -78,34 +81,40 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
                 { "IsSynced", true },{"JugadosMatch",player.PartidosJugados},{"JugadosWin", player.PartidosGanados},{"JugadosDraw", player.PartidosEmpate},{"JugadosDefeat",player.PartidosPerdidos}
             };
 
-            if (player.FotoPlayer != null)
-            {
-                parseObject["FotoPlayer"] = new Dictionary<string, object>
+                if (player.FotoPlayer != null)
+                {
+                    parseObject["FotoPlayer"] = new Dictionary<string, object>
                 {
                     { "__type", "File" },
                     { "name", player.FotoPlayer.Name }
                 };
-            }
+                }
 
-            var json = JsonSerializer.Serialize(parseObject);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var json = JsonSerializer.Serialize(parseObject);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await client.PutAsync(
-                $"https://parseapi.back4app.com/classes/Players/{player.ObjectId}",
-                content);
+                var response = await client.PutAsync(
+                    $"https://parseapi.back4app.com/classes/Players/{player.ObjectId}",
+                    content);
 
-            if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
+                {
+                    // ¡Éxito!
+                    var respuestaString = await response.Content.ReadAsStringAsync();
+                    // Opcional: puedes extraer el objeto actualizado aquí
+                }
+                else
+                {
+                    // Manejo de error
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Error: {response.StatusCode} - {errorContent}");
+                }
+            }catch (Exception ex)
             {
-                // ¡Éxito!
-                var respuestaString = await response.Content.ReadAsStringAsync();
-                // Opcional: puedes extraer el objeto actualizado aquí
+                // Manejo de excepciones
+                throw new Exception($"Excepción al guardar el jugador: {ex.Message}", ex);
             }
-            else
-            {
-                // Manejo de error
-                var errorContent = await response.Content.ReadAsStringAsync();
-                throw new Exception($"Error: {response.StatusCode} - {errorContent}");
-            } }
+            }
 
         public async Task CreatePlayerAsync(Player player)
         {
@@ -147,7 +156,8 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
             client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            var sesionToken = _authService.GetSessionToken();
+            var sesionToken = _auth
+                .GetSessionToken();
             client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sesionToken);
 
             var tipoMime = "image/jpeg";
@@ -182,7 +192,7 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
             client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
-            var sesionToken = _authService.GetSessionToken();
+            var sesionToken = _auth.GetSessionToken();
             client.DefaultRequestHeaders.Add("X-Parse-Session-Token", sesionToken);
 
             var response = await client.DeleteAsync($"https://parseapi.back4app.com/classes/Players/{objectId}");

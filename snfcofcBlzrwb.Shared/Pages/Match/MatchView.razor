@@ -1,6 +1,7 @@
 ﻿@page "/match/view"
 @inject NavigationManager NavigationManager
 @inject IMatchService MatchService
+@inject IAuthService AuthService
 @using Syncfusion.Blazor.Buttons
 <h3 class="section-title">📋 Juegos Jugados</h3>
 
@@ -25,13 +26,17 @@ else
             }
         </div>
 
-        <div class="d-flex justify-content-center mt-4">
-            <NavButton Label="➕ Nuevo Partido"
-                       TargetUrl="/match/new"
-                       ButtonClass="btn btn-lg btn-success action-button"
-                       ConfirmBeforeNavigate="true"
-                       ConfirmMessage="¿Deseas registrar un nuevo partido?" />
-        </div>
+        @if (!AuthService.GetUserRoles().Contains("ReadUser"))
+        {
+            <div class="d-flex justify-content-center mt-4">
+                <NavButton Label="➕ Nuevo Partido"
+                           TargetUrl="/match/new"
+                           ButtonClass="btn btn-lg btn-success action-button"
+                           ConfirmBeforeNavigate="true"
+                           ConfirmMessage="¿Deseas registrar un nuevo partido?" />
+            </div>
+        }
+        
     }
     else if (showAlert)
     {

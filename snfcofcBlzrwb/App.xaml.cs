@@ -1,4 +1,5 @@
-﻿using snfcofcBlzrwb.Shared.Services.Interfaces;
+﻿using snfcofcBlzrwb.Shared.Models;
+using snfcofcBlzrwb.Shared.Services.Interfaces;
 
 namespace snfcofcBlzrwb
 {
@@ -6,6 +7,7 @@ namespace snfcofcBlzrwb
     public partial class App : Application
     {   
         private readonly IAuthService _authService;
+        public User CurrentUser => _authService.GetCurrentUser();
         public App(IAuthService authService)
         {
             InitializeComponent();
