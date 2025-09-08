@@ -13,7 +13,17 @@
     <p class="text-muted"></p>
 }
 else
-{
+{   
+    @if (!AuthService.GetUserRoles().Contains("ReadUser"))
+        {
+            <div class="d-flex justify-content-center mt-4">
+                <NavButton Label="➕ Nuevo Partido"
+                           TargetUrl="/match/new"
+                           ButtonClass="btn btn-lg btn-success action-button"
+                           ConfirmBeforeNavigate="true"
+                           ConfirmMessage="¿Deseas registrar un nuevo partido?" />
+            </div>
+        }
     @if (match != null && match.Count > 0)
     {
         <div class="row g-4">
@@ -26,16 +36,7 @@ else
             }
         </div>
 
-        @if (!AuthService.GetUserRoles().Contains("ReadUser"))
-        {
-            <div class="d-flex justify-content-center mt-4">
-                <NavButton Label="➕ Nuevo Partido"
-                           TargetUrl="/match/new"
-                           ButtonClass="btn btn-lg btn-success action-button"
-                           ConfirmBeforeNavigate="true"
-                           ConfirmMessage="¿Deseas registrar un nuevo partido?" />
-            </div>
-        }
+        
         
     }
     else if (showAlert)
@@ -88,20 +89,9 @@ else
     opacity: 0.7;
     cursor: not-allowed;
     }
+    }
 
-    /* keyframes fadeInUp {
-    0% {
-    transform: translateY(20px);
-    opacity: 0;    
-    }
-    100% {
-    transform: translateY(0);
-    opacity: 1;
-    }
-    } */
 </style>
-
-
 
 @code {
     private List<MatchModel> match = new();
@@ -114,32 +104,32 @@ else
     private async Task Refesh()
     {
         isRefreshing = true;
-        // Simula carga o llama a tu servicio real
         await Task.Delay(1500);
-        // Aquí iría tu lógica de actualización
         isRefreshing = false;
     }
+
     protected override async Task OnInitializedAsync()
     {
-        try
-        { 
-            match = await MatchService.GetAllAsync();
-            partidos = match.OrderByDescending(p => p.EstatusMatchId).ToList();
-
-        }
-        catch (Exception)
+        if (!AuthService.IsAuthenticated())
         {
-            if (match == null || match.Count == 0)
+            NavigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            try
             {
-                showAlert = true;
-
-                // Espera breve para mostrar la alerta antes de redirigir
-                await Task.Delay(10000);
-                NuevoMatch();
+                match = await MatchService.GetAllAsync();
+                partidos = match.OrderByDescending(p => p.EstatusMatchId).ToList();
+            }
+            catch (Exception)
+            {
+                if (match == null || match.Count == 0)
+                {
+                    showAlert = true;
+                    await Task.Delay(10000);
+                    NuevoMatch();
+                }
             }
         }
-
-
-        
     }
-    }
+}

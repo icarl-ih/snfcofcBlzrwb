@@ -1,5 +1,7 @@
 ﻿@page "/sugested_xi/{ObjectId}"
 @using Syncfusion.Blazor.DropDowns
+@inject IAuthService AuthRemoteService
+@inject NavigationManager NavigationManager
 
 
 @inject IPlayerService PlayerService
@@ -453,6 +455,12 @@
 
     protected override void OnInitialized()
     {
-        SugerirXI();
+        if (!AuthRemoteService.IsAuthenticated())
+        {
+            NavigationManager.NavigateTo("/login");
+        }else{
+            SugerirXI();
+
+        }
     }
 }

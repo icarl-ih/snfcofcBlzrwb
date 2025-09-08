@@ -3,11 +3,12 @@
 @using Syncfusion.Blazor.Inputs
 @using System.Net.Http.Headers
 @inject HttpClient Http
+@inject IAuthService AuthRemoteService
 
 @inject IPlayerService PlayerService
 @inject IMatchService MatchService
 @inject IEvaluationService EvaluationService
-@inject NavigationManager Navigation
+@inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
 <h3>📋 Evaluación de Jugador</h3>
@@ -378,43 +379,52 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        try
+        if (!AuthRemoteService.IsAuthenticated())
         {
-            if (string.IsNullOrEmpty(PlayerId))
-                throw new Exception("Sin PlayerID");
-
-            Player = await PlayerService.GetByIdAsync(PlayerId);
-
-            if (Player == null)
-                throw new Exception($"Jugador con ID {PlayerId} no encontrado.");
-
-            Matches = await MatchService.GetAllAsync();
-            Evaluaciones = await EvaluationService.GetAllAsync();
-
-            // IDs de partidos ya evaluados por este jugador
-            var evaluadosIds = Evaluaciones
-                .Where(e => e.PlayerObjectId == PlayerId)
-                .Select(e => e.MatchObjectId)
-                .ToHashSet();
-
-            PartidosPendientes = Matches
-                .Where(m => m.EstatusMatchId != 0)
-                .Where(m => m.ClaveSub == Player.ClaveSub || m.ClavePlus == Player.ClavePlus)
-                .Where(m => !evaluadosIds.Contains(m.ObjectId))
-                .ToList();
-
-            PartidosEvaluados = Matches
-                .Where(m => evaluadosIds.Contains(m.ObjectId))
-                .ToList();
+            NavigationManager.NavigateTo("/login");
         }
-        catch (Exception ex)
+        else
         {
-            message = ex.Message;
+            try
+            {
+                if (string.IsNullOrEmpty(PlayerId))
+                    throw new Exception("Sin PlayerID");
+
+                Player = await PlayerService.GetByIdAsync(PlayerId);
+
+                if (Player == null)
+                    throw new Exception($"Jugador con ID {PlayerId} no encontrado.");
+
+                Matches = await MatchService.GetAllAsync();
+                Evaluaciones = await EvaluationService.GetAllAsync();
+
+                // IDs de partidos ya evaluados por este jugador
+                var evaluadosIds = Evaluaciones
+                    .Where(e => e.PlayerObjectId == PlayerId)
+                    .Select(e => e.MatchObjectId)
+                    .ToHashSet();
+
+                PartidosPendientes = Matches
+                    .Where(m => m.EstatusMatchId != 0)
+                    .Where(m => m.ClaveSub == Player.ClaveSub || m.ClavePlus == Player.ClavePlus)
+                    .Where(m => !evaluadosIds.Contains(m.ObjectId))
+                    .ToList();
+
+                PartidosEvaluados = Matches
+                    .Where(m => evaluadosIds.Contains(m.ObjectId))
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
-        finally
-        {
-            IsLoading = false;
-        }
+        
+        
     }
     private void OnAsistioChanged(bool value)
     {

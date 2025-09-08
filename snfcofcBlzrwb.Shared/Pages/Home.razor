@@ -69,22 +69,6 @@ else
 }
 <footer class="mt-5 text-center">
 
-    @* <SfButton CssClass="e-primary" IconCss="e-icons e-add" @onclick="IrANuevoJugador">
-        ➕ Nuevo Jugador
-    </SfButton> *@
-@*     <NavButton Label="⚽ Partidos"
-    TargetUrl="/match/view"
-    ButtonClass="btn btn-lg btn-success action-button"
-    ConfirmBeforeNavigate="true"
-    ConfirmMessage="¿Deseas salir de esta página?" />
- *@
-    @* <NavButton Label=" 📊 Evaluar Partidos"
-               TargetUrl= "/evaluate"
-               ButtonClass="btn btn-lg btn-success action-button"
-               ConfirmBeforeNavigate="true"
-               ConfirmMessage="¿Deseas registrar un nuevo jugador?" /> *@
-
-
 </footer>
 
 <style>
@@ -127,17 +111,6 @@ else
     opacity: 0.7;
     cursor: not-allowed;
     }
-
-    /* keyframes fadeInUp {
-    0% {
-    transform: translateY(20px);
-    opacity: 0;    
-    }
-    100% {
-    transform: translateY(0);
-    opacity: 1;
-    }
-    } */
 </style>
 
 
@@ -155,6 +128,7 @@ else
         isRefreshing = true;
         // Simula carga o llama a tu servicio real
         await Task.Delay(1500);
+        OnInitializedAsync();
         // Aquí iría tu lógica de actualización
         isRefreshing = false;
     }
