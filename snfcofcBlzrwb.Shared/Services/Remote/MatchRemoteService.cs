@@ -15,6 +15,7 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
     public class MatchRemoteService : IMatchService
     {
         private readonly IAuthService _auth;
+        private readonly IEvaluationService _evaluation;
         private readonly HttpClient _http;
         private readonly AppSettings _appSettings;
         public bool IsOnline { get; private set; } = true;
@@ -98,12 +99,15 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
 
         public async Task CreateMatch(MatchModel match)
         {
+            var sesionToken = _auth.GetSessionToken();
+            _http.DefaultRequestHeaders.Add("X-Parse-Session-Token", sesionToken);
+
             int.TryParse(Guid.NewGuid().ToString(), out var id);
             match.LocalId = id;
             
             var parseObject = new Dictionary<string, object>
             {
-                {"LocalId",match.LocalId },
+
                 {"RivalObjectId",match.RivalObjectId },
                 { "IsSynced", true },
                 { "Rival" , match.Rival },
@@ -132,7 +136,19 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             response.EnsureSuccessStatusCode();
         }
 
-       
+        public async Task<List<MatchModel>> GetUnEvaluatedMatches(List<string> ids, Player player)
+        {
+            List<MatchModel> matches = new List<MatchModel>();
+            List<MatchModel> PartidosPendientes = new List<MatchModel>();
+            matches = await GetAllAsync();
+            PartidosPendientes = matches
+                .Where(m => m.EstatusMatchId != 0)
+                .Where(m => m.ClavePlus == player.ClavePlus || m.ClaveSub == player.ClaveSub)
+                .Where(m => !ids.Contains(m.ObjectId))
+                .ToList();
+
+            return PartidosPendientes.ToList();
+        }
 
         public async Task<(string name, string url)> SubirFotoEquipoAsync(byte[] data, string nombreArchivo)
         {

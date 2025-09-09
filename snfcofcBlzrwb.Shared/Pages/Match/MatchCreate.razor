@@ -97,7 +97,8 @@
 
         @if (!string.IsNullOrEmpty(message))
         {
-            <div class="alert alert-info mt-4 text-center">@message</div>
+
+            <SfMessage Severity="@currentSeverity">@message</SfMessage>
         }
     </div>
 </div>
@@ -168,6 +169,7 @@
     private string selectedTeamId;
     private TeamModel selectedTeam;
     private string message;
+    private MessageSeverity currentSeverity = MessageSeverity.Info;
 
     protected override async Task OnInitializedAsync()
     {
@@ -192,6 +194,7 @@
                 match.RivalObjectId = selectedTeamId;
                 await MatchService.CreateMatch(match);
                 message = "Partido registrado correctamente.";
+                currentSeverity = MessageSeverity.Success;
             }
             else
             {
@@ -202,6 +205,8 @@
         catch (Exception ex)
         {
             message = $"Error: {ex.Message}";
+            currentSeverity = MessageSeverity.Warning;
+
         }
     }
 

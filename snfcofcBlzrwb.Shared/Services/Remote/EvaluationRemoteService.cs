@@ -44,6 +44,18 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
             var result = JsonSerializer.Deserialize<ParseResponse<PlayerEvaluation>>(json);
             return result?.Results ?? new List<PlayerEvaluation>();
         }
+        public async Task<List<string>> GetEvaluadosIds(string objectId)
+        {
+            List<PlayerEvaluation> evaluaciones = new List<PlayerEvaluation>();
+            evaluaciones = await GetAllAsync();
+            var listaIds = evaluaciones
+                .Where(e => e.PlayerObjectId == objectId)
+                    .Select(e => e.MatchObjectId)
+                    .ToHashSet();
+            return listaIds.ToList();
+        }
+
+        
         public async Task<PlayerEvaluation?> GetByIdAsync(string objectId)
         {
             var response = await _http.GetAsync($"/classes/PlayerEvaluation/{objectId}");

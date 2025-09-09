@@ -46,5 +46,7 @@ namespace snfcofcBlzrwb.Shared.Services.Implementations
         public Task<(string name, string url)> SubirFotoEquipoAsync(byte[] data, string nombreArchivo) =>
              _remote.SubirFotoEquipoAsync(data, nombreArchivo);
         public Task CreateMatch(MatchModel match) => _remote.CreateMatch(match);
+
+        public Task<List<MatchModel>> GetUnEvaluatedMatches(List<string> ids, Player player) => _remote.GetUnEvaluatedMatches(ids, player);
     }
 }

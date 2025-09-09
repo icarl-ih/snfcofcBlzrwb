@@ -156,14 +156,17 @@
                 Username = username.ToUpper(),
                 Password = password
             };
+            Console.WriteLine("Iniciando Validate User");
             var result = await Task.Run(() => AuthRemoteService.ValidateUserAsync(login.Username, login.Password));
+            Console.WriteLine($"Finalizó Validate User con {result.objectId}");
 
             if (AuthRemoteService.IsAuthenticated())
             {
-                NavigationManager.NavigateTo("/");
+                
                 errorMessage = "Usuario Autenticado";
                 currentSeverity = MessageSeverity.Success;
                 await InvokeAsync(async () => await ToastService.ShowSuccess(errorMessage));
+                 NavigationManager.NavigateTo("/");
             }
             else
             {

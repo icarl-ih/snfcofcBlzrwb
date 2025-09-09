@@ -46,6 +46,12 @@ namespace snfcofcBlzrwb.Shared.Services.Local
             return all.Where(e => !e.IsSynced).ToList();
         }
         public async Task CreateEvaluationAsync(PlayerEvaluation evaluation) { }
+        public Task<List<string>> GetEvaluadosIds(string objectId)
+        {
+            // Devuelve una lista vacía por defecto para cumplir con la firma y evitar CS0161.
+            return Task.FromResult(new List<string>());
+        }
+
     }
 
 }

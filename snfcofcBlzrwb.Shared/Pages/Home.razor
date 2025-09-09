@@ -2,6 +2,9 @@
 @inject IPlayerService PlayerService
 @inject NavigationManager NavigationManager
 @inject IAuthService AuthRemoteService
+@inject IMatchService MatchService
+@inject IEvaluationService EvaluationService
+
 
 @using Syncfusion.Blazor.Buttons
 <h3 class="section-title">📋 Jugadores Registrados</h3>
@@ -35,7 +38,8 @@
             <ChipItem Text="@($"Sub 19 ({players.Where(p => p.ClaveSub == true).Count().ToString()})")"></ChipItem>
             <ChipItem Text="@($"Plus ({players.Where(p => p.ClaveSub == true).Count().ToString()})")"></ChipItem>
             <ChipItem Text="@($"Ambas Categorías ({players.Where(p => p.ClaveSub == true && p.ClavePlus == true).Count().ToString()})")"></ChipItem>
-
+            <ChipItem Text="@($"Eval. Pendientes ({UnEvaluatedPlayers.Count().ToString()})")"></ChipItem>
+ 
         </ChipItems>
     </SfChip>
 </div>
@@ -46,7 +50,7 @@
 else
 {
     
-    @if (players != null && players.Count > 0)
+    @if (players != null && players.Any())
     {
         <div class="row g-4">
             @foreach (var player in jugadoresOrdenados)
@@ -118,6 +122,7 @@ else
 @code {
     private List<Player> players = new();
     private List<Player> jugadoresOrdenados;
+    private List<Player> UnEvaluatedPlayers = new List<Player>();
     public string[] FilterSelected = { "Todos" };
     private bool showAlert = false;
     void NuevoPlayer() => NavigationManager.NavigateTo("/playercrud/new");
@@ -136,7 +141,8 @@ else
     {
         if (!AuthRemoteService.IsAuthenticated())
         {
-            NavigationManager.NavigateTo("/login");
+            NavigationManager.NavigateTo("/login", replace: true);
+            //NavigationManager.NavigateTo("/login");
         }
         else
         {
@@ -146,6 +152,17 @@ else
                 jugadoresOrdenados = players.OrderByDescending(j => j.PartidosJugados)
                 .ThenByDescending(j => j.Ranking).ToList();
                 // FilterList = new List<string> { "Todos" };
+                
+                foreach(var plyr in players)
+                {
+                    var evaluadosIds = await EvaluationService.GetEvaluadosIds(plyr.ObjectId);
+                    var partidospend = await MatchService.GetUnEvaluatedMatches(evaluadosIds, plyr);
+
+                    if(partidospend != null && partidospend.Any())
+                    {
+                        UnEvaluatedPlayers.Add(plyr);
+                    }
+                }
 
 
             }
@@ -196,6 +213,10 @@ else
         else if (FilterSelected.Contains("Ambas Categorías (0)"))
         {
             jugadoresOrdenados = players.Where(p=>p.ClaveSub == true &&p.ClavePlus == true).OrderByDescending(p => p.Ranking).ToList();
+        }else if(FilterSelected.Contains("Eval. Pendientes (0)"))
+        {
+            jugadoresOrdenados = UnEvaluatedPlayers.OrderByDescending(j => j.PartidosJugados)
+            .ThenByDescending(j => j.Ranking).ToList();
         }
         else
         {

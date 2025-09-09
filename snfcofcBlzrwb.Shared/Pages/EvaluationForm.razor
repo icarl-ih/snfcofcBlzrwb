@@ -41,17 +41,15 @@ else
                 <div class="d-flex align-items-center">
                     <img src="@(Player?.FotoPlayer?.Url ?? "img/default.png")"
                     class="rounded-circle me-3"
-                    style="width: 100px; height: 100px;" />
-                    <div>
-                        <h5>@Player.Nombre</h5>
-                        <p class="text-muted">
-                            Categoría: @(
-                         Player.ClavePlus
-                             ? (Player.ClaveSub ? "Ambas Categorías" : "Plus")
-                             : (Player.ClaveSub ? "Sub 19" : "Sin Categoría")
-                            )
-                        </p>
-                    </div>
+                    style="height: 100px;" />
+                    <h5>@Player.Nombre</h5>
+                    <p class="text-muted">
+                        Categoría: @(
+                        Player.ClavePlus
+                        ? (Player.ClaveSub ? "Ambas Categorías" : "Plus")
+                        : (Player.ClaveSub ? "Sub 19" : "Sin Categoría")
+                                        )
+                    </p>
                 </div>
             </CardHeader>
 
@@ -210,7 +208,7 @@ else
             </CardContent>
         </SfCard> *@
 
-        <p class="text-danger">@message</p>
+        <SfMessage Severity="@currentSeverity">@errorMessage</SfMessage>
 
         <SfButton Type="Submit" CssClass="e-primary mt-3">Guardar Evaluación</SfButton>
     </EditForm>
@@ -357,7 +355,8 @@ else
     private int MatchIdSts;
     private bool MostrarCamposEvaluacion => Evaluation.Asistio;
     private float PuntajeCalculado => CalcularPuntaje();
-    private string message;
+    private string errorMessage; private MessageSeverity currentSeverity = MessageSeverity.Info;
+
     private bool IsLoading = true;
 
     private EventCallback<string> ValueChangedCallback =>
@@ -365,15 +364,16 @@ else
 
     public enum EstatusMatch
     {
-        Pendiente = 1,
-        EnJuego = 2,
-        Finalizado = 3,
-        Suspendido = 4
+        Pendiente = 0,
+        Perdido = 1,
+        Empatado = 2,
+        Ganado = 3
     }
     public enum MatchId
     {
-        Perdido = 0,
-        Empatado = 1,
+        Pendiente = 0,
+        Perdido = 1,
+        Empatado = 2,
         Ganado = 3
     }
 
@@ -399,16 +399,18 @@ else
                 Evaluaciones = await EvaluationService.GetAllAsync();
 
                 // IDs de partidos ya evaluados por este jugador
-                var evaluadosIds = Evaluaciones
-                    .Where(e => e.PlayerObjectId == PlayerId)
-                    .Select(e => e.MatchObjectId)
-                    .ToHashSet();
+                // var evaluadosIds = Evaluaciones
+                //     .Where(e => e.PlayerObjectId == PlayerId)
+                //     .Select(e => e.MatchObjectId)
+                //     .ToHashSet();
 
-                PartidosPendientes = Matches
-                    .Where(m => m.EstatusMatchId != 0)
-                    .Where(m => m.ClaveSub == Player.ClaveSub || m.ClavePlus == Player.ClavePlus)
-                    .Where(m => !evaluadosIds.Contains(m.ObjectId))
-                    .ToList();
+                var evaluadosIds = await EvaluationService.GetEvaluadosIds(PlayerId);
+                // PartidosPendientes = Matches
+                //     .Where(m => m.EstatusMatchId != 0)
+                //     .Where(m => m.ClaveSub == Player.ClaveSub || m.ClavePlus == Player.ClavePlus)
+                //     .Where(m => !evaluadosIds.Contains(m.ObjectId))
+                //     .ToList();
+                PartidosPendientes = await MatchService.GetUnEvaluatedMatches(evaluadosIds, Player);
 
                 PartidosEvaluados = Matches
                     .Where(m => evaluadosIds.Contains(m.ObjectId))
@@ -416,15 +418,16 @@ else
             }
             catch (Exception ex)
             {
-                message = ex.Message;
+                errorMessage = ex.Message;
+                currentSeverity = MessageSeverity.Error;
             }
             finally
             {
                 IsLoading = false;
             }
         }
-        
-        
+
+
     }
     private void OnAsistioChanged(bool value)
     {
@@ -468,26 +471,39 @@ else
 
     async Task SaveEvaluation()
     {
-        Evaluation.PlayerObjectId = PlayerId;
-        Evaluation.PlayerObjectId = Player.ObjectId;
-        Evaluation.MatchObjectId = SelectedMatch.ObjectId;
-
-        var player = await PlayerService.GetByIdAsync(PlayerId);
-        if (Evaluation.Asistio)
+        try
         {
-            player.PartidosJugados += 1;
-            switch (SelectedMatch.EstatusMatchId)
+            Evaluation.PlayerObjectId = PlayerId;
+            Evaluation.PlayerObjectId = Player.ObjectId;
+            Evaluation.MatchObjectId = SelectedMatch.ObjectId;
+
+            var player = await PlayerService.GetByIdAsync(PlayerId);
+            if (Evaluation.Asistio)
             {
-                case 3: player.PartidosGanados += 1; break;
-                case 2: player.PartidosEmpate +=1; break;
-                case 1: player.PartidosPerdidos += 1; break;
+                player.PartidosJugados += 1;
+                switch (SelectedMatch.EstatusMatchId)
+                {
+                    case 3: player.PartidosGanados += 1; break;
+                    case 2: player.PartidosEmpate += 1; break;
+                    case 1: player.PartidosPerdidos += 1; break;
 
+                }
             }
-        }
-        player.Ranking = (player.Ranking + PuntajeCalculado) / 2f;
+            player.Ranking = (player.Ranking + PuntajeCalculado) / 2f;
 
-        await PlayerService.SaveAsync(player);
-        await EvaluationService.CreateEvaluationAsync(Evaluation);
+            await PlayerService.SaveAsync(player);
+            await EvaluationService.CreateEvaluationAsync(Evaluation);
+            if (PlayerService.SaveAsync(player).IsCompletedSuccessfully && EvaluationService.CreateEvaluationAsync(Evaluation).IsCompletedSuccessfully)
+            {
+                errorMessage = "Evaluación y Nuevo ranking guardado correctamente";
+                currentSeverity = MessageSeverity.Success;
+            }
+        }catch(Exception ex)
+        {
+            errorMessage = ex.Message;
+            currentSeverity = MessageSeverity.Error;
+        }
+
     }
 
 

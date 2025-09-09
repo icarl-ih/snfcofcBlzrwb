@@ -39,7 +39,12 @@ namespace snfcofcBlzrwb
                 await DatabaseService.InitAsync();
                 return DatabaseService.GetConnection();
             });
-
+            builder.Services.AddHttpClient("ParseApi", client =>
+            {
+                client.BaseAddress = new Uri("https://parseapi.back4app.com/");
+                client.DefaultRequestHeaders.Add("X-Parse-Application-Id", "6oKsUkJEbAocUPj5GiVdHlgTJlNMOLuyXqAda0yB");
+                client.DefaultRequestHeaders.Add("X-Parse-REST-API-Key", "OGtKUrtBgknWdLCjN9BVkzOuX4Q31MGgTw4ZZ96c");
+            });
             builder.Services.AddScoped<AuthRemoteService>();
             builder.Services.AddScoped<IAuthService, AuthenticationService>();
             builder.Services.AddSingleton<ToastService>();
@@ -48,7 +53,11 @@ namespace snfcofcBlzrwb
             builder.Services.AddScoped<IEvaluationService, EvaluationRemoteService>();
             builder.Services.AddScoped<ITeamService, TeamsRemoteService>();
             builder.Services.AddScoped<ConnectivityService>();
-            builder.Services.AddScoped<HttpClient>();
+            //builder.Services.AddScoped<HttpClient>();
+            // using snfcofcBlzrwb; // para MauiUiDispatcher
+            // using snfcofcBlzrwb.Shared.Services; // para IUiDispatcher, ToastService
+
+            builder.Services.AddSingleton<IUiDispatcher, MauiUiDispatcher>();
 
             builder.Services.AddSingleton(new AppSettings
             {

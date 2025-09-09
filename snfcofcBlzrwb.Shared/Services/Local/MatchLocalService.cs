@@ -46,5 +46,6 @@ namespace snfcofcBlzrwb.Shared.Services.Local
         public async Task<(string name, string url)> SubirFotoEquipoAsync(byte[] data, string nombreArchivo) { return ("", ""); }
 
         public async Task CreateMatch(MatchModel match) { }
+        public async Task<List<MatchModel>> GetUnEvaluatedMatches(List<string> ids, Player player) { return new List<MatchModel>(); }
     }
 }

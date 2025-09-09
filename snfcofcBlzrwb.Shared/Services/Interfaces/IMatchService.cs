@@ -18,6 +18,7 @@ namespace snfcofcBlzrwb.Shared.Services.Interfaces
         Task DeleteAsync(string objectId);
         Task CreateMatch(MatchModel match);
         Task<(string name, string url)> SubirFotoEquipoAsync(byte[] data, string nombreArchivo);
+        Task<List<MatchModel>> GetUnEvaluatedMatches(List<string> ids, Player player);
 
     }
 }

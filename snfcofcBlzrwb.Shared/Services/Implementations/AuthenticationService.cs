@@ -68,14 +68,14 @@ namespace snfcofcBlzrwb.Shared.Services.Implementations
                 Username = username,
                 Roles = roles
             };
-
+#if ANDROID
             // Persistir
             await SecureStorage.SetAsync(KeyToken, sessionToken);
             Preferences.Set(KeyObjectId, objectId);
             Preferences.Set(KeyUsername, username ?? string.Empty);
             Preferences.Set(KeyEmail, email ?? string.Empty);
             Preferences.Set(KeyRoles, string.Join(",", roles ?? new()));
-
+#endif
             OnSessionChanged?.Invoke(_currentUser);
 
             return (sessionToken, objectId, email);
@@ -101,12 +101,14 @@ namespace snfcofcBlzrwb.Shared.Services.Implementations
 
         public void ClearSession()
         {
+#if ANDROID
             // Limpia persistencia
             SecureStorage.Remove(KeyToken);
             Preferences.Remove(KeyObjectId);
             Preferences.Remove(KeyUsername);
             Preferences.Remove(KeyEmail);
             Preferences.Remove(KeyRoles);
+#endif
 
             // Limpia memoria
             _sessionToken = null;
