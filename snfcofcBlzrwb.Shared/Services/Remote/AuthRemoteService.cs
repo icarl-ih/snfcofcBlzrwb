@@ -11,12 +11,14 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
         public AuthRemoteService(IHttpClientFactory factory)
         {
             _factory = factory;
+            
+
         }
 
         public async Task<(string sessionToken, string objectId, string email)> LoginAsync(string username, string password)
         {
             var client = _factory.CreateClient(ClientName);
-
+            client.BaseAddress = new Uri("https://parseapi.back4app.com/");
             var url = $"/login?username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
             using var response = await client.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();

@@ -7,9 +7,9 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
-<BackToHomeButton>
+<BacktoHomeButton>
     🏠 Ir al inicio
-</BackToHomeButton>
+</BacktoHomeButton>
 <h3>Editar Player</h3>
 
 @if (player == null)
@@ -79,9 +79,7 @@ else
 
     @if (!string.IsNullOrEmpty(message))
     {
-        <footer>
             <SfMessage Severity="@currentSeverity">@message</SfMessage>
-        </footer>
 
     }
 }

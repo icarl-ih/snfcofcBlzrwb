@@ -207,8 +207,11 @@ else
                                Text="@(PuntajeCalculado.ToString("0.00") + " / 5")" />
             </CardContent>
         </SfCard> *@
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <SfMessage Severity="@currentSeverity">@errorMessage</SfMessage>
 
-        <SfMessage Severity="@currentSeverity">@errorMessage</SfMessage>
+        }
 
         <SfButton Type="Submit" CssClass="e-primary mt-3">Guardar Evaluación</SfButton>
     </EditForm>

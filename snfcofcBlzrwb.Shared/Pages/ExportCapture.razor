@@ -1,0 +1,89 @@
+﻿@using Microsoft.JSInterop
+@using snfcofcBlzrwb
+@using snfcofcBlzrwb.Shared.Services.Interfaces
+@inject IJSRuntime JS
+@inject IExportSaver? ExportSaver
+
+<div class="flex gap-2">
+    <SfButton CssClass="e-outline e-primary" @onclick="ExportPngAsync">Exportar PNG</SfButton>
+    <SfButton CssClass="e-outline e-success" @onclick="ExportPdfAsync">Exportar PDF</SfButton>
+</div>
+
+@code {
+    [Parameter] public string TargetElementId { get; set; } = "line-up";
+    [Parameter] public int Jornada { get; set; }
+    [Parameter] public string Rival { get; set; } = string.Empty;
+
+    [Parameter] public EventCallback<string> OnInfo { get; set; }
+
+    private IJSObjectReference? _mod;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _mod = await JS.InvokeAsync<IJSObjectReference>("import", "./exporter.js");
+        }
+    }
+
+    private string BuildFileName(string ext)
+    {
+        var stamp = DateTime.Now.ToString("ddMMyyHHmmss");
+        var cleanRival =    string.Concat(Rival.Split(Path.GetInvalidFileNameChars()));
+        return $"XIJ{Jornada}VS{cleanRival}_{stamp}{ext}";
+    }
+
+    private async Task ExportPngAsync()
+    {
+        if (_mod is null) return;
+        var filename = BuildFileName(".png");
+
+        if (OperatingSystem.IsBrowser())
+        {
+            await _mod.InvokeVoidAsync("downloadPng", TargetElementId, filename);
+            await RaiseInfoAsync($"Descargando {filename}...");
+        }
+        else
+        {
+            var base64 = await _mod.InvokeAsync<string>("capturePngBase64", TargetElementId);
+            await SaveOnHostAsync(base64, filename, "image/png");
+        }
+    }
+
+    private async Task ExportPdfAsync()
+    {
+        if (_mod is null) return;
+        var filename = BuildFileName(".pdf");
+
+        if (OperatingSystem.IsBrowser())
+        {
+            await _mod.InvokeVoidAsync("downloadPdf", TargetElementId, filename);
+            await RaiseInfoAsync($"Descargando {filename}...");
+        }
+        else
+        {
+            var base64 = await _mod.InvokeAsync<string>("capturePdfBase64", TargetElementId);
+            await SaveOnHostAsync(base64, filename, "application/pdf");
+        }
+    }
+
+    private async Task SaveOnHostAsync(string base64NoHeader, string fileName, string contentType)
+    {
+        var bytes = Convert.FromBase64String(base64NoHeader);
+
+        if (ExportSaver is not null)
+        {
+            await ExportSaver.SaveAsync(bytes, fileName, contentType);
+            await RaiseInfoAsync($"Archivo generado ({fileName}), {bytes.Length} bytes.");
+        }
+        else
+        {
+            // Fallback si no hay servicio registrado (Web, etc.)
+            Console.WriteLine($"Archivo generado ({fileName}), {bytes.Length} bytes.");
+            await RaiseInfoAsync($"Archivo generado ({fileName}), {bytes.Length} bytes.");
+        }
+    }
+
+    private async Task RaiseInfoAsync(string message)
+        => await OnInfo.InvokeAsync(message);
+}

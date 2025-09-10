@@ -1,10 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+		<StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+	</PropertyGroup>
+
+
 
   <ItemGroup>
     <Compile Remove="wwwroot\bootstrap\**" />
@@ -32,4 +36,10 @@
     <PackageReference Include="Xamarin.Essentials" Version="1.8.1" />
   </ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework.StartsWith(`net9.0-android`))' 
+                     Or '$(TargetFramework.StartsWith(`net9.0-ios`))' 
+                     Or '$(TargetFramework.StartsWith(`net9.0-maccatalyst`))' 
+                     Or '$(TargetFramework.StartsWith(`net9.0-windows`))'">
+		<FrameworkReference Include="Microsoft.Maui" />
+	</ItemGroup>
 </Project>

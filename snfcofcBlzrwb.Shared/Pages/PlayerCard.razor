@@ -14,12 +14,8 @@
         </CardHeader>
 
         <CardContent>
-            <div class="row">
-                <!-- Foto del jugador -->
-                @* <div class="e-avatar e-avatar-circle e-avatar-xlarge">
-                    <img src="@Player.FotoPlayer.Url" alt="profile_pic" />
-                </div> *@
-                <div class="col-4 d-flex justify-content-center">
+            <div class="lineup-container">
+                <div class="lineup-left">
                     @if (!string.IsNullOrEmpty(Player.FotoPlayer?.Url))
                     {
                         <img src="@Player.FotoPlayer.Url" class="player-photo img-fluid rounded shadow-sm" />
@@ -27,8 +23,9 @@
                 </div>
 
                 <!-- Datos del jugador -->
-                <div class="col-8 flex-column justify-content-between">
+                <div class="lineup-right ">
                     <div>
+                        <p><strong>Partidos Jugados: </strong>@Player.PartidosJugados</p>
                         <p><strong>Posición:</strong> @Player.Posicion</p>
                         <p><strong>Dorsal:</strong> @Player.Dorsal</p>
                         <p><strong>Categoría:</strong> @(Player.ClavePlus ? Player.ClaveSub ? "Ambas Categorías" : "Plus" : Player.ClaveSub ? "Sub 19" : "Sin Categoría")</p>
@@ -38,22 +35,25 @@
                         {
                             <p class="badge bg-success text-white">⭐ Top Performer</p>
                         }
-                        else if (Player.Ranking <= 2)
+                        else if (Player.Ranking >1.5 && Player.Ranking < 4)
                         {
-                            <p class="badge bg-danger text-white">⚠️ Bajo rendimiento</p>
+                            <p class="badge bg-warning text-white">Jugador Regular</p>
                         }
+                        else if (Player.Ranking <= 1)
+                        {
+                            <p class="badge bg-danger text-white">⚠️ Jugador de Bajo rendimiento</p>
+                        }
+                        
                     </div>
-
-
                     @if (!AuthService.GetUserRoles().Contains("ReadUser"))
                     {
-                        <div class="text-end mt-3">
+                        <div class="lineup-center">
 
-                            <SfButton class="btn btn-primary" @onclick="EditarPlayer">Editar Player</SfButton>
-                            <SfButton class="btn btn-primary" @onclick="EvaluarMatchs">📊 Evaluar Partidos</SfButton>
+                            <SfButton class="btn btn-primary button-spacing" @onclick="EditarPlayer">Editar Player</SfButton>
+                            <SfButton class="btn btn-primary button-spacing" @onclick="EvaluarMatchs">📊 Evaluar Partidos</SfButton>
                             @if (AuthService.GetUserRoles().Contains("B4aAdminUser"))
                             {
-                                <SfButton class="btn btn-danger" @onclick="EliminarPlayer" disabled="@isDeleting">
+                                <SfButton class="btn btn-danger button-spacing" @onclick="EliminarPlayer" disabled="@isDeleting">
                                     @if (isDeleting)
                                     {
                                         <span class="spinner-border spinner-border-sm me-2" role="status">Eliminando...</span>
@@ -69,7 +69,10 @@
                             }
                         </div>
                     }
+
+                    
                 </div>
+                
             </div>
         </CardContent>
     </SfCard>
@@ -78,7 +81,30 @@
 
 
 <style>
+    .button-spacing {
+        margin-bottom: 5px;
+    }
+    .lineup-container {
+        display: flex;
+        flex-direction: row; /* ← Cambia a horizontal */
+        justify-content: space-between; /* Distribuye los elementos */
+        align-items: flex-start;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 10px;
+        gap: 20px; /* Espacio entre columnas */
+    }
 
+    .lineup-left, .lineup-right {
+        width: 50%;
+        vertical-align: central;
+    }
+
+    .lineup-center {
+        flex-grow: 1;
+        max-width: 400px;
+        position: relative;
+    }
     .e-custom-card .e-avatar {
         font-size: 40px;
         position: absolute;
@@ -122,8 +148,8 @@
     }
 
     .player-photo {
-    height: 70%;
-    object-fit: cover;
+width:90%;
+object-fit: cover;
     border: 3px solid #dee2e6;
     max-height : 200px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
@@ -169,8 +195,8 @@
 
     private string GetCardColor(float ranking)
     {
-        if (ranking >= 4.5) return "card-green";
-        if (ranking >= 3) return "card-yellow";
+        if (ranking >= 4) return "card-green";
+        if (ranking >= 1.5) return "card-yellow";
         return "card-red";
     }
 

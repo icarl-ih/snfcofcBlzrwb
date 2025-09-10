@@ -142,6 +142,8 @@ namespace snfcofcBlzrwb.Shared.Services.Remote
                     { "name", player.FotoPlayer.Name }
                 };
             }
+            var sessiontoken = _auth.GetSessionToken();
+            _http.DefaultRequestHeaders.Add("X-Parse-Session-Token", sessiontoken);
             var json = JsonSerializer.Serialize(parseObject);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 

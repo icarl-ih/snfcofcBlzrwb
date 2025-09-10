@@ -9,6 +9,7 @@ using SQLite;
 using Syncfusion.Blazor;
 using Syncfusion.Blazor.Popups;
 using Syncfusion.Blazor.Notifications;
+using snfcofcBlzrwb.Servicios;
 
 namespace snfcofcBlzrwb
 {
@@ -53,6 +54,7 @@ namespace snfcofcBlzrwb
             builder.Services.AddScoped<IEvaluationService, EvaluationRemoteService>();
             builder.Services.AddScoped<ITeamService, TeamsRemoteService>();
             builder.Services.AddScoped<ConnectivityService>();
+            builder.Services.AddSingleton<IExportSaver, MauiExportSaver>();
             //builder.Services.AddScoped<HttpClient>();
             // using snfcofcBlzrwb; // para MauiUiDispatcher
             // using snfcofcBlzrwb.Shared.Services; // para IUiDispatcher, ToastService
